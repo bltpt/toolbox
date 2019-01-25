@@ -7,24 +7,33 @@
 import sys
 import os
 
-def main(calltype, pInput):
+def main(calltype, programInput):
     '''main: String String/FileHandle
     Purpose: determine whether the program was passed a file handle or
              piped string input
     '''
     if calltype is "file":
-        processFile(pInput)
+        processFile(programInput)
     elif calltype is "pipe":
-        processPipe(pInput)
+        processPipe(programInput)
     else:
         sys.exit("findcidr: program called incorrectly. Accepts input
         only from StdIn or when passed a path to a file of IP
         addresses.")
 
 def processFile(addrFile): 
-    '''processFile: FileHandle
+    '''processFile: FileHandle --> StdOut
+    Purpose: to read each line in FileHandle as an IP address, looking
+             up the smallest registered CIDR block to which it belongs.
     '''
 
+def processPipe(pipeInput):
+    '''processFile: String --> StdOut
+    Purpose: to look up the smallest registered CIDR block to IP
+             address as String belongs.
+    '''
+    
+    
 # Call main
 if __name__ == '__main__':
     if not os.isatty(0):
