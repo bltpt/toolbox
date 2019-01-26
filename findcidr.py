@@ -6,46 +6,23 @@
 
 import sys
 import os
+import dns.resolver
 
-def main(calltype, programInput):
-    '''main: String String/FileHandle
-    Purpose: determine whether the program was passed a file handle or
-             piped string input
-    '''
-    if calltype is "file":
-        processFile(programInput)
-    elif calltype is "pipe":
-        processPipe(programInput)
-    else:
-        sys.exit("findcidr: program called incorrectly. Accepts input
-        only from StdIn or when passed a path to a file of IP
-        addresses.")
+server = 'origin.asn.cymru.com'
 
-def processFile(addrFile): 
-    '''processFile: FileHandle --> StdOut
-    Purpose: to read each line in FileHandle as an IP address, looking
-             up the smallest registered CIDR block to which it belongs.
-    '''
+addresses = ['231.12.45.178', '82.23.116.5', '4.237.38.65', '9.12.28.87']
 
-def processPipe(pipeInput):
-    '''processFile: String --> StdOut
-    Purpose: to look up the smallest registered CIDR block to IP
-             address as String belongs.
-    '''
-    
-    
-# Call main
-if __name__ == '__main__':
-    if not os.isatty(0):
-        pipeInput = sys.stdin.readlines()
-        for line in pipeInput:
-            main("pipe", line)
-    else:
-         try:
-             addressFile = open(sys.argv[1], 'r')
-             main(addressFile)
-         except IndexError as e:
-             print('Correct use: findcidr /path/to/ListOfIPs')
-         except:
-             print("Unexpected error: ", sys.exc_info()[0])
-             raise
+myResolver = dns.resolver.Resolver()
+
+myAnswers = []
+
+for address in addresses:
+    octet1, octet2, octet3, octet4 = address.split(".", maxsplit=4)
+    addressFlip = octet4 + "." + octet3 + "." + octet2 + "." + octet1
+    query = addressFlip+"."+server
+    try:
+        result = myResolver.query(query, "TXT")
+        for answer in result:
+            print("%s: %s" % (address, answer))
+    except:
+        print("%s: no data. Is the address routable?")
