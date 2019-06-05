@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# mkproj: Launch a new Project
+
+# Interpret the argument as the name of a directory to be created.
+projPath=$1
+
+# Create the new directory
+mkdir $projPath
+
+# Create the name of the project file
+projFile=`echo $projPath | tr [:upper:] [:lower:]`
+
+# Open an org-mode file in the new directory
+echo "* Project Overview" > $projPath/$projFile.org
+
+# Start editing the project file
+emacs $projPath/$projFile.org
