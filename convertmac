@@ -1,0 +1,9 @@
+#! /bin/bash
+
+# Script to convert a colon-less MAC address into a colon-ful one.
+
+# Read in first argument colon-less MAC address as variable "mac"
+mac="$1"
+
+# convert $mac to colon-ful MAC address
+echo $mac | sed 's/\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)/\1:\2:\3:\4:\5:\6/g' 
