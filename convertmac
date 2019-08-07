@@ -2,8 +2,25 @@
 
 # Script to convert a colon-less MAC address into a colon-ful one.
 
-# Read in first argument colon-less MAC address as variable "mac"
-mac="$1"
+if [ -z "$1" ]
+then
+    echo "Error: no argument"
+else
+    mac="$1"
+    size=${#mac}
 
-# convert $mac to colon-ful MAC address
-echo $mac | sed 's/\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)/\1:\2:\3:\4:\5:\6/g' 
+    # Test if the mac address is not delimited.
+    if [ $size == 12 ]
+    then
+	echo $mac | sed 's/\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)\(\w\w\)/\1:\2:\3:\4:\5:\6/g' 
+    else
+	# Test if the mac address is delimited.
+	if [ $size == 17 ]
+	then
+	    echo $mac | sed 's/\(\w\w\)-\(\w\w\)-\(\w\w\)-\(\w\w\)-\(\w\w\)-\(\w\w\)/\1:\2:\3:\4:\5:\6/g'
+        else
+	    # The argument must be malformed, so just return it.
+	    echo $1
+	fi	
+    fi
+fi
