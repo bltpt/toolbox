@@ -2,22 +2,31 @@
 
 # mkproj: Launch a new Project
 
-# Interpret the argument as the name of a directory to be created.
-projPath=$1
+# Test for presence of an input argument
+if [ -z "$1" ]
+then
+    echo "Bad argument. Correct use:"
+    echo ""
+    echo "                            mkproj Some-Project-Name"
+else
+    
+    # Interpret the argument as the name of a directory to be created.
+    projPath=$1
 
-# Create the new directory
-mkdir $projPath
+    # Create the new directory
+    mkdir $projPath
 
-# Make supporting directories
-mkdir $projPath/Emails
+    # Make supporting directories
+    mkdir $projPath/Emails
 
-# Create the name of the project file
-projFile=`echo $projPath | tr [:upper:] [:lower:]`
+    # Create the name of the project file
+    projFile=`echo $projPath | tr [:upper:] [:lower:]`
 
-# Open an org-mode file in the new directory
-echo "* Project Overview" >> $projPath/$projFile.org
-echo "* Next Steps" >> $projPath/$projFile.org
-echo "* Resolution" >> $projPath/$projFile.org
+    # Open an org-mode file in the new directory
+    echo "#+TODO: TODO(t) IN-PROGRESS(i) WAITING(w) | DONE(d)" >> $projPath/$projFile.org
+    echo "* Project Overview" >> $projPath/$projFile.org
+    echo "* Next Steps" >> $projPath/$projFile.org
 
-# Start editing the project file
-emacs $projPath/$projFile.org
+    # Start editing the project file
+    emacs $projPath/$projFile.org
+fi
