@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Find the project files
+projFiles=$(find -L ./ -maxdepth 2 -type f -name \*.org)
+
+# Initialize results array
+results=()
+
+# For each file, determine the status
+for file in $projFiles
+do
+    # Grep for the state as defined for the file
+    status=$(cat $file | grep "Next Steps" | grep -Eo "TODO|IN-PROGRESS|WAITING|DONE")
+    if [ -z $status ]
+    then
+	status="Undefined"
+    else
+	status=$status
+    fi
+
+    project=$(echo $file | sed "s/^.\///g" | sed "s/\/.*$//g")
+    results+=$project,$status"\n"
+done
+
+# Pretty print the output with a header
+(printf "PROJECT,STATUS\n"; printf "${results[*]}") | column -s "," -t
