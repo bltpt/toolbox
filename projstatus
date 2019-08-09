@@ -18,7 +18,7 @@ do
 	status=$status
     fi
 
-    project=$(echo $file | sed "s/^.\///g" | sed "s/\/.*$//g")
+    project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
     results+=$project,$status"\n"
 done
 
