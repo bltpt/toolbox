@@ -9,7 +9,8 @@ results=()
 # For each file, determine the status
 for file in $projFiles
 do
-    # Grep for the state as defined for the file
+    # Grep for the state of the Next Steps line and determine
+    # the status of the project
     status=$(cat $file | grep "Next Steps" | grep -Eo "TODO|IN-PROGRESS|WAITING|DONE")
     if [ -z $status ]
     then
@@ -18,10 +19,41 @@ do
 	status=$status
     fi
 
+    # For some reason, nextStep persists into the next iteration, so setting
+    # it to null on each iteration as a stop-gap.
+    nextStep=""
+    
+    if [ "$status" == "WAITING" ]
+    then
+	# Determine the line on which Next Steps resides
+	nextStepsLine=$(grep -n "Next Steps" $file | cut -f 1 -d ":")
+	fileLines=$(wc -l $file | cut -f 1 -d " ")
+	nextStepLine=$(expr $nextStepsLine + 3)
+	nextStep=$(sed -n ${nextStepLine}p $file | sed "s/^ *//")
+    fi
+
+    if [[ "$status" == "TODO" || "$status" == "Undefined" ]]
+    then
+	nextStep="Start the project."
+    fi
+
+    if [ "$status" == "IN-PROGRESS" ]
+    then
+	# The Next Step is the first incomplete checklist item after the
+	# Next Steps header
+	nextStep=$(sed -e "1,/^.*Next Steps.*/d" $file | grep -m 1 -E "^\- \[ \] " | sed "s/- \[ \] //")
+    fi
+	
+    # Grab the last modification time of the org file.
     lastMod=$(ls -l --time-style=long-iso $file | cut -f 6,7 -d " ")
+
+    # Shorten project name
     project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
-    results+=$project,$status,$lastMod"\n"
+
+    # Add to the results array
+    results+=$project,$status,$lastMod,$nextStep"\n"
+    #echo "Exiting loop. The file is: " $file "and the nextStep is:" $nextStep
 done
 
 # Pretty print the output with a header
-(printf "PROJECT,STATUS,LAST MODIFIED\n"; printf "${results[*]}") | column -s "," -t
+(printf "PROJECT,STATUS,LAST MODIFIED,NEXT STEP\n"; printf "${results[*]}") | column -s "," -t
