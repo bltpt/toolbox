@@ -18,9 +18,10 @@ do
 	status=$status
     fi
 
+    lastMod=$(ls -l --time-style=long-iso $file | cut -f 6,7 -d " ")
     project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
-    results+=$project,$status"\n"
+    results+=$project,$status,$lastMod"\n"
 done
 
 # Pretty print the output with a header
-(printf "PROJECT,STATUS\n"; printf "${results[*]}") | column -s "," -t
+(printf "PROJECT,STATUS,LAST MODIFIED\n"; printf "${results[*]}") | column -s "," -t
