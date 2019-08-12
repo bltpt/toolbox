@@ -11,7 +11,7 @@ for file in $projFiles
 do
     # Grep for the state of the Next Steps line and determine
     # the status of the project
-    status=$(cat $file | grep "Next Steps" | grep -Eo "TODO|IN-PROGRESS|WAITING|DONE")
+    status=$(cat $file | grep -E "^\*.+Next Steps" | grep -Eo "TODO|IN-PROGRESS|WAITING|DONE")
     if [ -z $status ]
     then
 	status="Undefined"
@@ -26,7 +26,7 @@ do
     if [ "$status" == "WAITING" ]
     then
 	# Determine the line on which Next Steps resides
-	nextStepsLine=$(grep -n "Next Steps" $file | cut -f 1 -d ":")
+	nextStepsLine=$(grep -En "^\*.+Next Steps" $file | cut -f 1 -d ":")
 	fileLines=$(wc -l $file | cut -f 1 -d " ")
 	nextStepLine=$(expr $nextStepsLine + 3)
 	nextStep=$(sed -n ${nextStepLine}p $file | sed "s/^ *//")
