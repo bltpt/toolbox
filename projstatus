@@ -27,7 +27,6 @@ do
     then
 	# Determine the line on which Next Steps resides
 	nextStepsLine=$(grep -En "^\*.+Next Steps" $file | cut -f 1 -d ":")
-	fileLines=$(wc -l $file | cut -f 1 -d " ")
 	nextStepLine=$(expr $nextStepsLine + 3)
 	nextStep=$(sed -n ${nextStepLine}p $file | sed "s/^ *//")
     fi
@@ -52,7 +51,7 @@ do
 
     # Add to the results array
     results+=$project\;$status\;$lastMod\;$nextStep"\n"
-    #echo "Exiting loop. The file is: " $file "and the nextStep is:" $nextStep
+    
 done
 
 # Pretty print the output with a header
