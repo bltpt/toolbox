@@ -51,9 +51,9 @@ do
     project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
 
     # Add to the results array
-    results+=$project,$status,$lastMod,$nextStep"\n"
+    results+=$project\;$status\;$lastMod\;$nextStep"\n"
     #echo "Exiting loop. The file is: " $file "and the nextStep is:" $nextStep
 done
 
 # Pretty print the output with a header
-(printf "PROJECT,STATUS,LAST MODIFIED,NEXT STEP\n"; printf "${results[*]}") | column -s "," -t
+(printf "PROJECT;STATUS;LAST MODIFIED;NEXT STEP\n"; printf "${results[*]}") | column -s ";" -t
