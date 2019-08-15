@@ -44,15 +44,20 @@ do
     fi
 	
     # Grab the last modification time of the org file.
-    lastMod=$(ls -l --time-style=long-iso $file | cut -f 6,7 -d " ")
+    # This is the macOS-specific invocation.
+    lastMod=$(stat -x $file | grep Modify | sed 's/^Modify: //' | cut -f 2-5 -d " ")
 
     # Shorten project name
     project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
 
+    # Results Delimeter
+    # Could replace this with '\x00'
+    delim=$(printf '\xe2\x98\x95')
+    
     # Add to the results array
-    results+=$project\;$status\;$lastMod\;$nextStep"\n"
+    results+=$project$delim$status$delim$lastMod$delim$nextStep"\n"
     
 done
 
 # Pretty print the output with a header
-(printf "PROJECT;STATUS;LAST MODIFIED;NEXT STEP\n"; printf "${results[*]}") | column -s ";" -t
+(printf "PROJECT${delim}STATUS${delim}LAST MODIFIED${delim}NEXT STEP\n"; printf "${results[*]}") | column -s "${delim}" -t
