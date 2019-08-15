@@ -42,11 +42,14 @@ do
 	# Next Steps header
 	nextStep=$(sed -e "1,/^.*Next Steps.*/d" $file | grep -m 1 -E "^\- \[ \] " | sed "s/- \[ \] //")
     fi
-	
+
     # Grab the last modification time of the org file.
     # This is the macOS-specific invocation.
     lastMod=$(stat -x $file | grep Modify | sed 's/^Modify: //' | cut -f 2-5 -d " ")
 
+    # Grab the last modification time of the org file.
+    lastMod=$(ls -l --time-style=long-iso $file | cut -f 6,7 -d " ")
+    
     # Shorten project name
     project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
 
