@@ -11,7 +11,7 @@ for file in $projFiles
 do
     # Grep for the state of the Next Steps line and determine
     # the status of the project
-    status=$(cat $file | grep -E "^\*.+Next Steps" | grep -Eo "TODO|IN-PROGRESS|WAITING|DONE")
+    status=$(grep -E "^\*.+Next Steps" $file | grep -Eo "TODO|IN-PROGRESS|WAITING|DONE")
     if [ -z $status ]
     then
 	status="Undefined"
