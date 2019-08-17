@@ -9,9 +9,15 @@ results=()
 # For each file, determine the status
 for file in $projFiles
 do
+
+    # Determine the supported states in the given org file
+    states=`head -n 1 ./bltpt-Blog/bltpt-blog.org \\
+            | sed "s/^#+TODO: //" | sed 's/([^ ]*)//g' | sed 's/| //' \\
+            | sed "s/ /|/g"`
+
     # Grep for the state of the Next Steps line and determine
     # the status of the project
-    status=$(grep -E "^\*.+Next Steps" $file | grep -Eo "TODO|IN-PROGRESS|WAITING|DONE")
+    status=$(grep -E "^\*.+Next Steps" $file | grep -Eo "$states")
     if [ -z $status ]
     then
 	status="Undefined"
@@ -19,11 +25,10 @@ do
 	status=$status
     fi
 
-    # For some reason, nextStep persists into the next iteration, so setting
-    # it to null on each iteration as a stop-gap.
+    # Initiate nextStep for this run of the loop.
     nextStep=""
     
-    if [ "$status" == "WAITING" ]
+    if [[ "$status" == "WAITING" || "$status" == "SCHEDULED" ]]
     then
 	# Determine the line on which Next Steps resides
 	nextStepsLine=$(grep -En "^\*.+Next Steps" $file | cut -f 1 -d ":")
@@ -40,7 +45,8 @@ do
     then
 	# The Next Step is the first incomplete checklist item after the
 	# Next Steps header
-	nextStep=$(sed -e "1,/^.*Next Steps.*/d" $file | grep -m 1 -E "^\- \[ \] " | sed "s/- \[ \] //")
+	nextStep=`sed -e "1,/^.*Next Steps.*/d" $file \\
+		    | grep -m 1 -E "^\- \[ \] " | sed "s/- \[ \] //"`
     fi
 
     if [ `uname` == "Linux" ]
