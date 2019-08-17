@@ -3,7 +3,7 @@
 # Test whether there's an input directory
 if [ "$1" != "" ]
 then
-    root="$1"
+    root="./`echo $1 | sed 's/\.\|\///g'`"
 else
     root="./"
 fi
