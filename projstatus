@@ -53,14 +53,17 @@ do
     then
 	# Grab the last modification time of the org file.
 	lastMod=$(ls -l --time-style=long-iso $file | cut -f 6,7 -d " ")
+    else
+	if [ `uname` == "Darwin" ]
+	then
+	    # Grab the last modification time of the org file.
+	    # This is the macOS-specific invocation.
+	    lastMod=$(date -jf "%b %e %H:%M:%S %Y" "`stat -x $file | grep Modify | sed 's/^Modify: //' | cut -f 2-5 -d " "`" +"%Y-%m-%d %H:%M")
+	else
+	    lastMod='Unsupported platform'
+	fi
     fi
-
-    if [ `uname` == "Darwin" ]
-    then
-	# Grab the last modification time of the org file.
-	# This is the macOS-specific invocation.
-	lastMod=$(date -jf "%b %e %H:%M:%S %Y" "`stat -x $file | grep Modify | sed 's/^Modify: //' | cut -f 2-5 -d " "`" +"%Y-%m-%d %H:%M")
-    fi
+    
     
     # Shorten project name
     project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
