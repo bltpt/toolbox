@@ -11,7 +11,7 @@ for file in $projFiles
 do
 
     # Determine the supported states in the given org file
-    states=`head -n 1 ./bltpt-Blog/bltpt-blog.org \\
+    states=`head -n 1 $file \\
             | sed "s/^#+TODO: //" | sed 's/([^ ]*)//g' | sed 's/| //' \\
             | sed "s/ /|/g"`
 
