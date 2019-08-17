@@ -1,7 +1,16 @@
 #!/bin/bash
 
+# Test whether there's an input directory
+if [ "$1" != "" ]
+then
+    root="$1"
+else
+    root="./"
+fi
+
 # Find the project files
-projFiles=$(find -L ./ -maxdepth 2 -type f -name \*.org)
+projFiles=$(find -L $root -maxdepth 2 -type f -name \*.org)
+
 
 # Initialize results array
 results=()
