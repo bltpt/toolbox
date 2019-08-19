@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# nof.sh: Normalize Org File
+
+# Test for presence of an input argument
+if [ -z "$1" ]
+then
+    echo "Bad argument. Correct use:"
+    echo ""
+    echo "                            nof myfile.org"
+else
+    file=$1
+    fileHeader=`head -n 1 $file`
+    canonicalHeader="#+TODO: TODO(t) IN-PROGRESS(i) WAITING(w@) | SCHEDULED(s@) DONE(d)"
+
+    # See if the org file has no TODO header
+    # Pattern matching (==) has implicit anchoring, while
+    # regexen (=~) requires anchors (^, $)?
+    if [[ "$fileHeader" == '#+TODO'* ]]
+    then
+	# Replace the line in the file
+	sed -i "1s/^#+TODO: .*/${canonicalHeader}/" $file
+    else
+	if [ -z "$fileHeader" ]
+	then
+	    # You have an empty file
+	    echo "Error: empty file ${file}"
+	else
+	    # Assume the file has no TODO header and insert
+	    sed -i "1i${canonicalHeader}" $file
+	fi
+    fi
+fi
