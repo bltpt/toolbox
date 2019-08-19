@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# tc: count the number of columns in a file
+
+# Assume input file is a .tsv file, count the number of tabs in the
+# first line and return that as the count of columns in the file
+
+
+# main: PathToTSVFile --> StdOut
+# Purpose: to validate and accept the path to a TSV file as input,
+#          and print to StdOut the count of columns in that file.
+# Example: main(./mytsv) --> 12
+function main {
+
+    # Check the arugment passed to the script is a valid file path
+    pathcheck $1
+
+    # Process the 
+    processfile $1
+    
+}
+
+
+# pathcheck: String --> MaybeStopTheProgram
+# Purpose: to accept a string as input and determine whether it is a valid file
+#          path on the system. If so, do nothing. If not, terminate the script.
+# Example: pathcheck(./badpath) --> stop the program
+#          pathcheck(./validpath) --> <nothing>
+function pathcheck {
+    
+    if [ ! -f $1 ];
+	then echo "Error: the path specified is not a file"
+	exit 1
+    fi
+
+}
+
+# processfile: PathToTSVFile --> StdOut
+# Purpose: to accept a path to a TSV file, count its columns, and print
+#          that count to StdOut
+# Example: main(./mytsv) --> 12 
+function processfile {
+
+    head -n 1 "$1" | sed 's/\n//g' | tr '\t' '\n' | wc -l
+    
+}
+
+
+# Function Calls
+
+main $1
