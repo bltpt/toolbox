@@ -17,7 +17,7 @@ else
     mkdir $projPath
 
     # Make supporting directories
-    mkdir $projPath/Emails
+    mkdir $projPath/Correspondence
 
     # Create the name of the project file
     projFile=`echo $projPath | tr [:upper:] [:lower:]`
