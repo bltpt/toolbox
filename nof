@@ -16,18 +16,41 @@ else
     # See if the org file has no TODO header
     # Pattern matching (==) has implicit anchoring, while
     # regexen (=~) requires anchors (^, $)?
-    if [[ "$fileHeader" == '#+TODO'* ]]
+    if [ `uname` == "Linux" ]
     then
-	# Replace the line in the file
-	sed -i "1s/^#+TODO: .*/${canonicalHeader}/" $file
-    else
-	if [ -z "$fileHeader" ]
+	if [[ "$fileHeader" == '#+TODO'* ]]
 	then
-	    # You have an empty file
-	    echo "Error: empty file ${file}"
+	    # Replace the line in the file
+	    sed -i "1s/^#+TODO: .*/${canonicalHeader}/" $file
 	else
-	    # Assume the file has no TODO header and insert
-	    sed -i "1i${canonicalHeader}" $file
+	    if [ -z "$fileHeader" ]
+	    then
+		# You have an empty file
+		echo "Error: file ${file} is empty or has a blank first line."
+	    else
+		# Assume the file has no TODO header and insert
+		sed -i "1i${canonicalHeader}" $file
+	    fi
+	fi
+    fi
+
+    # Handle everything differently for a Mac, because the macOS
+    # version of sed is difficult.
+    if [ `uname` == "Darwin" ]
+    then
+	if [[ "$fileHeader" == '#+TODO'* ]]
+	then
+	    # Replace the line in the file
+	    sed -i '' -e '1s/^#+TODO.*/${canonicalHeader}/' $file
+	else
+	    if [ -z "$fileHeader" ]
+	    then
+		# You have an empty file
+		echo "Error: file ${file} is empty or has a blank first line."
+	    else
+		# Assume the file has no TODO header and insert
+		sed -i '' -e $'1 i\\\n'"${canonicalHeader}" $file
+	    fi
 	fi
     fi
 fi
