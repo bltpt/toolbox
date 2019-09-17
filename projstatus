@@ -45,7 +45,7 @@ do
     # Initiate nextStep for this run of the loop.
     nextStep=""
     
-    if [[ "$status" == "WAITING" || "$status" == "SCHEDULED" || "$status" == "HANDED-OFF" || "$status" == "CANCELLED" || "$status" == "DONE" ]]
+    if [[ "$status" == "WAITING" || "$status" == "SCHEDULED" || "$status" == "HANDED-OFF" || "$status" == "POSTPONED" || "$status" == "CANCELLED" || "$status" == "DONE" ]]
     then
 	# Determine the line on which Next Steps resides
 	nextStepsLine=$(grep -En "^\*.+Next Steps" $file | cut -f 1 -d ":")
