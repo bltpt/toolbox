@@ -4,13 +4,24 @@
 if [ "$1" != "" ]
 then
     root="./`echo $1 | sed 's/\.\|\///g'`"
+    input=1
 else
     root="./"
+    input=0
 fi
 
 # Find the project files
-projFiles=$(find -L $root -maxdepth 2 -type f -name \*.org)
-
+if [ $input == 0 ]
+   then
+   projFiles=$(find -L $root -maxdepth 2 -type f -name \*.org)
+   else
+       if [ $input == 1 ]
+	  then
+	  projFiles=$(find -L $root -maxdepth 1 -type f -name \*.org)
+	  else
+	      echo "Error: can't determine where to start looking for .org files"
+       fi
+fi
 
 # Initialize results array
 results=()
