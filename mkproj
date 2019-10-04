@@ -23,7 +23,7 @@ else
     projFile=`echo $projPath | tr [:upper:] [:lower:]`
 
     # Open an org-mode file in the new directory
-    echo "#+TODO: TODO(t) IN-PROGRESS(i) WAITING(w@) SCHEDULED(s@) | HANDED-OFF(h@) POSTPONED(p@) CANCELLED(c@) DONE(d@)" >> $projPath/$projFile.org
+    projheader >> $projPath/$projFile.org
     echo "* Project Overview" >> $projPath/$projFile.org
     echo "* Next Steps" >> $projPath/$projFile.org
     echo ":LOGBOOK:" >> $projPath/$projFile.org
