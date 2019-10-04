@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "#+TODO: TODO(t) IN-PROGRESS(i) WAITING(w@) SCHEDULED(s@) | HANDED-OFF(h@) POSTPONED(p@) CANCELLED(c@) DONE(d@)"
