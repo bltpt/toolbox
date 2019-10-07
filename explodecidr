@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+
+# explodecidr: list all the IP addresses in a CIDR block
+
+import os
+import sys
+from netaddr import *
+
+def processPipe(cidr):
+    '''processPipe: CIDR --> StdOut
+    Purpose: to explode a CIDR block to its constiuent IP addresses
+             and print those to StdOut
+    '''
+    try:
+            # remove newline character from line
+            block=cidr.rstrip()
+            	
+            # explode the block
+            processCidr(block)
+
+    except Exception as e:
+
+        print >> sys.stderr, "does not exist"
+        print >> sys.stderr, "Exception: %s" % str(e)
+        sys.exit(1)        
+
+def processCidr(cidr):
+    '''processCidr: String --> StdOut
+    Purpose: find all IP addresses in String-represenation of a CIDR block
+             and print to StdOut
+    '''
+    try:
+            # remove newline character from line
+            block=cidr.rstrip()
+
+            ips = IPNetwork(block)
+
+            for addr in ips:
+                print(addr)
+
+    except Exception as e:
+
+        print >> sys.stderr, "does not exist"
+        print >> sys.stderr, "Exception: %s" % str(e)
+        sys.exit(1)        
+
+## Function calls
+
+if __name__ == '__main__':
+    if not os.isatty(0):
+        try:
+            input = sys.stdin.readlines()
+            for line in input:
+                processPipe(line)
+        except SystemExit as e:
+            print(e)
+    else:
+        try:
+            input = sys.argv[1]
+            processCidr(input)
+        except SystemExit as e:
+            print(e)
