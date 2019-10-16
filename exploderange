@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+
+# exploderange: IPv4 address range --> StdOut
+# Given an input argument of <IP1>-<IP2>, list all of the addresses in the
+# range starting with IP1 and ending with IP2.
+
+import sys
+from netaddr import *
+
+ips = sys.argv[1].split('-')
+
+range = ip.IPRange(ips[0],ips[1])
+
+for addr in range:
+    print(str(addr))
+
