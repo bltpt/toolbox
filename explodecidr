@@ -4,7 +4,7 @@
 
 import os
 import sys
-from netaddr import *
+import netaddr # Importing the whole module so I can catch particular Exceptions
 
 def processPipe(cidr):
     '''processPipe: CIDR --> StdOut
@@ -19,7 +19,6 @@ def processPipe(cidr):
             processCidr(block)
 
     except Exception as e:
-
         print >> sys.stderr, "does not exist"
         print >> sys.stderr, "Exception: %s" % str(e)
         sys.exit(1)        
@@ -30,33 +29,33 @@ def processCidr(cidr):
              and print to StdOut
     '''
     try:
-            # remove newline character from line
-            block=cidr.rstrip()
+        # remove newline character from line
+        block=cidr.rstrip()
 
-            ips = IPNetwork(block)
+        # build an IPNetwork object from the cidr
+        ips = netaddr.IPNetwork(cidr)
 
-            for addr in ips:
-                print(addr)
+    except netaddr.core.AddrFormatError:
+        print("Invalid CIDR block: %s" % block)
+        sys.exit(1)
+        
+    for addr in ips:
+        print(addr)
 
-    except Exception as e:
-
-        print >> sys.stderr, "does not exist"
-        print >> sys.stderr, "Exception: %s" % str(e)
-        sys.exit(1)        
 
 ## Function calls
 
 if __name__ == '__main__':
     if not os.isatty(0):
         try:
-            input = sys.stdin.readlines()
-            for line in input:
+            inputLines = sys.stdin.readlines()
+            for line in inputLines:
                 processPipe(line)
-        except SystemExit as e:
-            print(e)
+        except SystemExit:
+            pass
     else:
         try:
-            input = sys.argv[1]
-            processCidr(input)
-        except SystemExit as e:
-            print(e)
+            cidr = sys.argv[1]
+            processCidr(cidr)
+        except SystemExit:
+            pass
