@@ -5,12 +5,22 @@
 # range starting with IP1 and ending with IP2.
 
 import sys
-from netaddr import *
+import netaddr # figure out how to import all exceptions
 
 ips = sys.argv[1].split('-')
 
-range = ip.IPRange(ips[0],ips[1])
+def processRange(start,end):
+    '''processRange: IP1 IP2 --> StdOut
+    Purpose: given the start of an IP address range IP1 and end of
+    range IP2, print to StdOut all of the IP addresses in that range.
+    '''
+    try:
+        netRange = netaddr.ip.IPRange(ips[0],ips[1])
+    except netaddr.core.AddrFormatError as e:
+        print("Malformed IP address range: %s" % e)
+        sys.exit(1)
+        
+    for addr in netRange:
+        print(str(addr))
 
-for addr in range:
-    print(str(addr))
-
+processRange(ips[0],ips[1])
