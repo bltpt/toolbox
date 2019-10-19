@@ -12,16 +12,14 @@ def processCidr(cidr):
              and print to StdOut
     '''
     try:
-        # remove newline character from line
-        block=cidr.rstrip()
 
         # build an IPNetwork object from the cidr
         ips = netaddr.IPNetwork(cidr)
 
-    except netaddr.core.AddrFormatError:
-        print("Invalid CIDR block: %s" % block)
-        sys.exit(1)
-        
+    except netaddr.core.AddrFormatError as e:
+        print("Malformed CIDR block: %s" % e)
+        return
+
     for addr in ips:
         print(addr)
 
@@ -33,14 +31,16 @@ if __name__ == '__main__':
         try:
             inputLines = sys.stdin.readlines()
             for line in inputLines:
-                processCidr(line)
+                # remove newline character from line
+                cidr = line.rstrip()
+                processCidr(cidr)
         except Exception as e:
-            print("Problem with handling input from pipe: %s" % line)
+            print(e)
             pass
     else:
         try:
             cidr = sys.argv[1]
             processCidr(cidr)
         except Exception as e:
-            print("Problem with handling input argument: %s" % cidr)
+            print(e)
             pass

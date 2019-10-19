@@ -15,12 +15,11 @@ def processRange(start,end):
     '''
     try:
         
-        netRange = netaddr.ip.IPRange(ips[0],ips[1])
+        netRange = netaddr.ip.IPRange(start,end)
 
     except netaddr.core.AddrFormatError as e:
-
-        print("Malformed IP address range: %s" % e)
-        sys.exit(1)
+        print("Malformed IP address range: %s, %s" % (start,end))
+        return
         
     for addr in netRange:
         print(str(addr))
@@ -29,12 +28,16 @@ def processRange(start,end):
 
 if __name__ == '__main__':
     if not os.isatty(0):
+        inputLines = sys.stdin.readlines()
         try:
-            inputLines = sys.stdin.readlines()
             for line in inputLines:
-                line = line.rstrip()
-                ips = line.split('-')
-                processRange(ips[0],ips[1])
+                try:
+                    line = line.rstrip()
+                    ips = line.split('-')
+                    processRange(ips[0],ips[1])
+                except Exception as e :
+                    print("%s: %s" % (e, line))
+                    pass
         except Exception as e:
             print("Problem with handling input from pipe %s" % line)
             print(e)
@@ -45,5 +48,4 @@ if __name__ == '__main__':
             processRange(ips[0],ips[1])
         except Exception as e:
             print("Problem handling input argument %s" % sys.argv[1])
-            print(e)
             pass
