@@ -6,23 +6,6 @@ import os
 import sys
 import netaddr # Importing the whole module so I can catch particular Exceptions
 
-def processPipe(cidr):
-    '''processPipe: CIDR --> StdOut
-    Purpose: to explode a CIDR block to its constiuent IP addresses
-             and print those to StdOut
-    '''
-    try:
-            # remove newline character from line
-            block=cidr.rstrip()
-            	
-            # explode the block
-            processCidr(block)
-
-    except Exception as e:
-        print >> sys.stderr, "does not exist"
-        print >> sys.stderr, "Exception: %s" % str(e)
-        sys.exit(1)        
-
 def processCidr(cidr):
     '''processCidr: String --> StdOut
     Purpose: find all IP addresses in String-represenation of a CIDR block
@@ -50,12 +33,14 @@ if __name__ == '__main__':
         try:
             inputLines = sys.stdin.readlines()
             for line in inputLines:
-                processPipe(line)
-        except SystemExit:
+                processCidr(line)
+        except Exception as e:
+            print("Problem with handling input from pipe: %s" % line)
             pass
     else:
         try:
             cidr = sys.argv[1]
             processCidr(cidr)
-        except SystemExit:
+        except Exception as e:
+            print("Problem with handling input argument: %s" % cidr)
             pass

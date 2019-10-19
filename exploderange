@@ -4,10 +4,9 @@
 # Given an input argument of <IP1>-<IP2>, list all of the addresses in the
 # range starting with IP1 and ending with IP2.
 
+import os
 import sys
 import netaddr # figure out how to import all exceptions
-
-ips = sys.argv[1].split('-')
 
 def processRange(start,end):
     '''processRange: IP1 IP2 --> StdOut
@@ -15,12 +14,36 @@ def processRange(start,end):
     range IP2, print to StdOut all of the IP addresses in that range.
     '''
     try:
+        
         netRange = netaddr.ip.IPRange(ips[0],ips[1])
+
     except netaddr.core.AddrFormatError as e:
+
         print("Malformed IP address range: %s" % e)
         sys.exit(1)
         
     for addr in netRange:
         print(str(addr))
 
-processRange(ips[0],ips[1])
+## Call the program
+
+if __name__ == '__main__':
+    if not os.isatty(0):
+        try:
+            inputLines = sys.stdin.readlines()
+            for line in inputLines:
+                line = line.rstrip()
+                ips = line.split('-')
+                processRange(ips[0],ips[1])
+        except Exception as e:
+            print("Problem with handling input from pipe %s" % line)
+            print(e)
+            pass
+    else:
+        try:
+            ips = sys.argv[1].split('-')
+            processRange(ips[0],ips[1])
+        except Exception as e:
+            print("Problem handling input argument %s" % sys.argv[1])
+            print(e)
+            pass
