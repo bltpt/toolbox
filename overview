@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# overview: [DirPath] --> StdOut
+# Print the contents of the Overview section of a project file.
+
+# Check for invocation style: DirPath or no DirPath.
+
+# If there's a DirPath, extract and print the overview of the Project File in that DirPath.
+
+# Else, assume we're in a Project Directory, descend the directory
+# listing, and print the overview of each project.
+
