@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# splunkify: Arg1 Arg2 --> StdOut
+# Process a string into a Splunk query statement
+
+# Treat Arg1 to the program as a field, Arg2 as a field value
+echo `echo $2 | sed "s/^/\"/" | sed "s/$/\"/" | sed "s/^/\${1}=/"`
+
