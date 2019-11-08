@@ -21,7 +21,8 @@ else
 	if [[ "$fileHeader" == '#+TODO'* ]]
 	then
 	    # Replace the line in the file
-	    sed -i "1s/^#+TODO: .*/${canonicalHeader}/" $file
+	    #sed -i "1s/^#+TODO: .*/${canonicalHeader}/" $file
+	    perl -pi -e 's/^#+TODO:.*/this is a first line/ if $. == 1;' $file
 	else
 	    if [ -z "$fileHeader" ]
 	    then
@@ -29,7 +30,8 @@ else
 		echo "Error: file ${file} is empty or has a blank first line."
 	    else
 		# Assume the file has no TODO header and insert
-		sed -i "1i${canonicalHeader}" $file
+		#sed -i "1i${canonicalHeader}" $file
+		perl -pi -e 'print "'"${canonicalHeader}"'\n" if $. == 1;' $file
 	    fi
 	fi
     fi
@@ -49,7 +51,7 @@ else
 		echo "Error: file ${file} is empty or has a blank first line."
 	    else
 		# Assume the file has no TODO header and insert
-		sed -i '' -e $'1 i\\\n'"${canonicalHeader}" $file
+		perl -pi -e 'print "'"${canonicalHeader}"'\n" if $. == 1;' $file
 	    fi
 	fi
     fi
