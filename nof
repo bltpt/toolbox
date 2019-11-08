@@ -11,7 +11,7 @@ then
 else
     file=$1
     fileHeader=`head -n 1 $file`
-    canonicalHeader="#+TODO: TODO(t) IN-PROGRESS(i) WAITING(w@) | SCHEDULED(s@) DONE(d)"
+    canonicalHeader=`projheader`
 
     # See if the org file has no TODO header
     # Pattern matching (==) has implicit anchoring, while
