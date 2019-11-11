@@ -14,43 +14,18 @@ else
     canonicalHeader=`projheader`
 
     # See if the org file has no TODO header
-    # Pattern matching (==) has implicit anchoring, while
-    # regexen (=~) requires anchors (^, $)?
-    if [ `uname` == "Linux" ]
+    if [[ "$fileHeader" == '#+TODO'* ]]
     then
-	if [[ "$fileHeader" == '#+TODO'* ]]
+	# Replace the line in the file
+	perl -pi -e 's/^\#\+TODO:.*/'"${canonicalHeader}"'/ if $. == 1;' $file
+    else
+	if [ -z "$fileHeader" ]
 	then
-	    # Replace the line in the file
-	    perl -pi -e 's/^\#\+TODO:.*/'"${canonicalHeader}"'/ if $. == 1;' $file
+	    # You have an empty file
+	    echo "Error: file ${file} is empty or has a blank first line."
 	else
-	    if [ -z "$fileHeader" ]
-	    then
-		# You have an empty file
-		echo "Error: file ${file} is empty or has a blank first line."
-	    else
-		# Assume the file has no TODO header and insert
-		perl -pi -e 'print "'"${canonicalHeader}"'\n" if $. == 1;' $file
-	    fi
-	fi
-    fi
-
-    # Handle everything differently for a Mac, because the macOS
-    # version of sed is difficult.
-    if [ `uname` == "Darwin" ]
-    then
-	if [[ "$fileHeader" == '#+TODO'* ]]
-	then
-	    # Replace the line in the file
-	    perl -pi -e 's/^\#\+TODO:.*/'"${canonicalHeader}"'/ if $. == 1;' $file
-	else
-	    if [ -z "$fileHeader" ]
-	    then
-		# You have an empty file
-		echo "Error: file ${file} is empty or has a blank first line."
-	    else
-		# Assume the file has no TODO header and insert
-		perl -pi -e 'print "'"${canonicalHeader}"'\n" if $. == 1;' $file
-	    fi
+	    # Assume the file has no TODO header and insert
+	    perl -pi -e 'print "'"${canonicalHeader}"'\n" if $. == 1;' $file
 	fi
     fi
 fi
