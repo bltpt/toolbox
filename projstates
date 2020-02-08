@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# projstates: Str -> Str
+# Purpose: convert a ProjHeader string to a list of states
+
+states=`echo $1 \\
+        | grep -E "^#\+TODO: " \\
+        | sed "s/^#+TODO: //" | sed 's/([^ ]*)//g' | sed 's/| //' \\
+        | sed "s/ /|/g"`
+
+printf $states
