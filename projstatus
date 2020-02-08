@@ -32,7 +32,7 @@ do
 
     # Determine the supported states in the given org file, if any.
     headerLine=`head -n 1 $file`
-    states=`projstates "${headerline}"`
+    states=`projstates "${headerLine}"`
 
     # Determine the status of the project. If there are no TODO states
     # defined in the file, set status to "No Header"
