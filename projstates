@@ -8,4 +8,4 @@ states=`echo $1 \\
         | sed "s/^#+TODO: //" | sed 's/([^ ]*)//g' | sed 's/| //' \\
         | sed "s/ /|/g"`
 
-printf $states
+printf "${states}"
