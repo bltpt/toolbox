@@ -31,10 +31,8 @@ for file in $projFiles
 do
 
     # Determine the supported states in the given org file, if any.
-    states=`head -n 1 $file \\
-            | grep -E "^#\+TODO: " \\
-            | sed "s/^#+TODO: //" | sed 's/([^ ]*)//g' | sed 's/| //' \\
-            | sed "s/ /|/g"`
+    headerLine=`head -n 1 $file`
+    states=`projstates "${headerline}"`
 
     # Determine the status of the project. If there are no TODO states
     # defined in the file, set status to "No Header"
