@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# projdone: Path --> <move the Path>
+# Purpose: mark a project DONE and move it to the completed projects
+#          directory
+
+# Read in the project file path
+file=$1
+
+# Determine the completed projects directory
+completedProjects="$COMPLETEDPROJECTS"
+
+# Read in the possible states
+header=`head -n 1 $file`
+states=`projstates "${header}"`
+
+# Find the next steps line in the project org file
+nextStepsLine=$(grep -En "^\* .+Next Steps" $file | tail -n 1 |  cut -f 1 -d ":")
+
+# Capture the current state
+state=$(grep "Next Steps" $file | tail -n 1 | egrep -o "${states}")
+#state=`egrep -o "^ (.*) Next Steps" $file | tail -n 1`
+
+# Change the current state line in the project org file to DONE
+perl -pi -e 's/^\*.* Next Steps/\* DONE Next Steps/ if $. == '"${nextStepsLine}"';' $file
+
+# Annotate with projdone having changed the state.
+date=`date "+%Y-%m-%d %a %H:%M"`
+logbookLine=$(expr $nextStepsLine + 2)
+annotationLine=$(expr $logbookLine + 1)
+perl -pi -e 'print "- State \"DONE\" from \"'"${state}"'\"    ['"${date}"']\n" if $. == '"${logbookLine}"';' $file
+perl -pi -e 'print "  Closed via projdone.\n" if $. == '"${annotationLine}"';' $file
+#printf "  - State \"DONE\" from \"${state}\"    [${date}]"
+#printf '    Closed through projdone.'
+
+# Move the project directory to the completed projects directory
+#mv "$proj" "$completedProjects/"
