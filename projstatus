@@ -42,7 +42,7 @@ do
     else
 	# Grep for the state of the Next Steps line and determine
 	# the status of the project
-	status=$(grep -E "^\*.+Next Steps" $file | grep -Eo "$states")
+	status=$(grep -E "^\* .+Next Steps" $file | tail -n 1 | grep -Eo "$states")
 	if [ -z $status ]
 	then
 	    status="Undefined"
@@ -57,7 +57,7 @@ do
     if [[ "$status" == "WAITING" || "$status" == "SCHEDULED" || "$status" == "HANDED-OFF" || "$status" == "POSTPONED" || "$status" == "CANCELLED" || "$status" == "DONE" ]]
     then
 	# Determine the line on which Next Steps resides
-	nextStepsLine=$(grep -En "^\*.+Next Steps" $file | cut -f 1 -d ":")
+	nextStepsLine=$(grep -En "^\* .+Next Steps" $file | tail -n 1 | cut -f 1 -d ":")
 	nextStepLine=$(expr $nextStepsLine + 3)
 	nextStep=$(sed -n ${nextStepLine}p $file | sed "s/^ *//")
     fi
