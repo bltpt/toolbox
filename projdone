@@ -1,27 +1,52 @@
 #!/bin/bash
 
 # projdone: Path --> <move the Path>
-# Purpose: mark a project DONE and move it to the completed projects
-#          directory
+# Purpose: mark a project at PATH "DONE" and move it to the completed
+#          projects directory
+
+
+## Variables used here
+######################
+
+## $path: the resolved absolute path of the input to projdone 
+
+## $dirPath: the resolved absolute path of the project directory for
+##           the project being marked done.
+
+## $orgFile: the resolved absolute path of the org file within the
+##           project directory at $dirPath
 
 
 # Test whether input is an org file, project directory
 # or something else.
 if [ "$1" != "" ]
 then
-    path=`realpath $1`
+    path=`realpath -e $1`
     basename=`basename $path`
 
-    # Test for a path to an org file
+    # Test for a path to an org file in a matching project
+    # directory
     if [ -f "$path" ]
     then
 	if echo "$path" | egrep -qo ".*\.org$"
 	then
 	    echo "orgFile found: $path"
-	    orgFile=$path
-	    dirPath=`echo $path | sed "s/\/[^\/]+$//"`
-	    echo "dirPath is $dirPath"
-	    exit 0
+	    pathLength=`echo $path | grep -o "/" | wc -l`
+	    dirPath=`echo $path | cut -f 1-$pathLength -d "/"`
+	    dirNameLower=`basename $dirPath | tr [:upper:] [:lower:]`
+	    chompedFileName=`echo $basename | sed "s/\.org//"`
+	    
+	    if [ "$dirNameLower" == "$chompedFileName" ]
+	    then
+		echo "orgFile resides in a project directory"
+		orgFile=$path
+		echo "dirPath is $dirPath"
+		exit 0
+	    else
+		printf "Error:\n\n    Specified org file does not reside in a project directory.\n"
+		exit 1
+	    fi
+	    
 	else
 	    printf "Error:\n\n    Specified file is not an org-file.\n"
 	    exit 1
@@ -37,6 +62,9 @@ then
 	if [ -f "$path/$basenameLower" ]
 	then
 	    echo "the input directory is a project directory"
+	    dirPath=$path
+	    orgFile=$path/$basenameLower
+	    echo "the orgfile is $orgFile"
 	    exit 0
 	else
 	    printf "Error:\n\n    Specified directory is not a project directory.\n"
@@ -51,10 +79,6 @@ else
     printf "Error:\n\n     No input specified.\n"
     exit 1
 fi
-
-
-# Read in the project file path
-file=$1
 
 # Determine the completed projects directory
 completedProjects="$COMPLETEDPROJECTS"
