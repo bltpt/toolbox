@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# isProjFile: Str --> orgFilePath projDirPath
+# Purpose: test whether Str represents a project org file. If it does,
+#          return the path to the file represented by Str, and the path
+#          to the directory in which is resides, with exit status
+#          0. Else, print error with exit status 1.
+
+if [ "$1" != "" ]
+then
+    path=`realpath -e $1`
+    basename=`basename $path`
+
+    # Test for a path to an org file in a matching project
+    # directory
+    if [ -f "$path" ]
+    then
+	if echo "$path" | egrep -qo ".*\.org$"
+	then
+	    pathLength=`echo $path | grep -o "/" | wc -l`
+	    dirPath=`echo $path | cut -f 1-$pathLength -d "/"`
+	    dirNameLower=`basename $dirPath | tr [:upper:] [:lower:]`
+	    chompedFileName=`echo $basename | sed "s/\.org//"`
+	    
+	    if [ "$dirNameLower" == "$chompedFileName" ]
+	    then
+		orgFile=$path
+		projDir=$dirPath
+		echo $orgFile $projDir
+	    else
+		printf "Error:\n\n    Specified org file does not reside in a project directory.\n"
+		exit 1
+	    fi
+
+	else
+	    printf "Error:\n\n    Specified file is not an org file.\n"
+	    exit 1
+	fi
+	
+    else
+	printf "Error:\n\n    Specified input is not a file.\n"
+	exit 1
+    fi
+else
+    printf "Error:\n\n    No input given.\n"
+    exit 1
+fi

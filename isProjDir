@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# isProjDir: Str --> orgFilePath projDirPath
+# Purpose: to test whether Str is a path to a project directory. If it
+#          is, print the absolute path to it's project org file, and
+#          the absolute path to the directory at Str, returning exit
+#          status 0. Else, print an error and return exit status 1.
+
+if [ "$1" != "" ]
+then
+    path=`realpath -e $1`
+    basename=`basename $path`
+
+    if [ -d "$path" ]
+    then
+	basenameLower=`echo $basename | tr [:upper:] [:lower:]`".org"
+	if [ -f "$path/$basenameLower" ]
+	then
+	    projDir=$path
+	    orgFile=$path/$basenameLower
+	    echo $orgFile $projDir
+	else
+	    printf "Error:\n\n    Specified directory is not a project directory.\n"
+	    exit 1
+	fi
+    else
+	printf "Error:\n\n    Specified input is neither a file nor a directory.\n"
+	exit 1
+    fi
+else
+    printf "Error:\n\n     No input specified.\n"
+    exit 1
+fi
