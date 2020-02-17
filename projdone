@@ -48,6 +48,14 @@ states=`projstates "${header}"`
 
 # Find the next steps line in the project org file
 nextStepsLine=$(grep -En "^\* .+Next Steps" $orgFile | tail -n 1 |  cut -f 1 -d ":")
+if [ "$nextStepsLine" != "" ]
+then
+    logbookLine=$(expr $nextStepsLine + 2)
+    annotationLine=$(expr $logbookLine + 1)
+else
+    printf "Error:\n\n    Can't find Next Steps line. Is project file malformed?\n"
+    exit 1
+fi
 
 # Capture the current state
 state=$(grep "Next Steps" $orgFile | tail -n 1 | egrep -o "${states}")
@@ -57,8 +65,6 @@ perl -pi -e 's/^\*.* Next Steps/\* DONE Next Steps/ if $. == '"${nextStepsLine}"
 
 # Annotate with projdone having changed the state.
 date=`date "+%Y-%m-%d %a %H:%M"`
-logbookLine=$(expr $nextStepsLine + 2)
-annotationLine=$(expr $logbookLine + 1)
 perl -pi -e 'print "- State \"DONE\" from \"'"${state}"'\"    ['"${date}"'] \\\\\n" if $. == '"${logbookLine}"';' $orgFile
 perl -pi -e 'print "  Closed via projdone.\n" if $. == '"${annotationLine}"';' $orgFile
 
