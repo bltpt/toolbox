@@ -17,64 +17,23 @@
 ##           project directory at $dirPath
 
 
+
 # Test whether input is an org file, project directory
 # or something else.
 if [ "$1" != "" ]
 then
-    path=`realpath -e $1`
-    basename=`basename $path`
-
-    # Test for a path to an org file in a matching project
-    # directory
-    if [ -f "$path" ]
+    if paths=(`isProjDir $1`)
     then
-	if echo "$path" | egrep -qo ".*\.org$"
-	then
-	    echo "orgFile found: $path"
-	    pathLength=`echo $path | grep -o "/" | wc -l`
-	    dirPath=`echo $path | cut -f 1-$pathLength -d "/"`
-	    dirNameLower=`basename $dirPath | tr [:upper:] [:lower:]`
-	    chompedFileName=`echo $basename | sed "s/\.org//"`
-	    
-	    if [ "$dirNameLower" == "$chompedFileName" ]
-	    then
-		echo "orgFile resides in a project directory"
-		orgFile=$path
-		echo "dirPath is $dirPath"
-		exit 0
-	    else
-		printf "Error:\n\n    Specified org file does not reside in a project directory.\n"
-		exit 1
-	    fi
-	    
-	else
-	    printf "Error:\n\n    Specified file is not an org-file.\n"
-	    exit 1
-	fi
-    fi
-
-    # Test for a project directory
-    if [ -d "$path" ]
+	orgFile=${paths[0]}
+	projDir=${paths[1]}
+    elif paths=(`isProjFile $1`)
     then
-	echo "directory found"
-	basenameLower=`echo $basename | tr [:upper:] [:lower:]`".org"
-	echo "the basenameLower is $basenameLower"
-	if [ -f "$path/$basenameLower" ]
-	then
-	    echo "the input directory is a project directory"
-	    dirPath=$path
-	    orgFile=$path/$basenameLower
-	    echo "the orgfile is $orgFile"
-	    exit 0
-	else
-	    printf "Error:\n\n    Specified directory is not a project directory.\n"
-	    exit 1
-	fi
+	orgFile=${paths[0]}
+	projDir=${paths[1]}
     else
-	printf "Error:\n\n    Specified input is neither a file nor a directory.\n"
+	printf "Error:\n\n    Specified input isn't a project directory or org file.\n"
 	exit 1
     fi
-    
 else
     printf "Error:\n\n     No input specified.\n"
     exit 1
@@ -84,27 +43,24 @@ fi
 completedProjects="$COMPLETEDPROJECTS"
 
 # Read in the possible states
-header=`head -n 1 $file`
+header=`head -n 1 $orgFile`
 states=`projstates "${header}"`
 
 # Find the next steps line in the project org file
-nextStepsLine=$(grep -En "^\* .+Next Steps" $file | tail -n 1 |  cut -f 1 -d ":")
+nextStepsLine=$(grep -En "^\* .+Next Steps" $orgFile | tail -n 1 |  cut -f 1 -d ":")
 
 # Capture the current state
-state=$(grep "Next Steps" $file | tail -n 1 | egrep -o "${states}")
-#state=`egrep -o "^ (.*) Next Steps" $file | tail -n 1`
+state=$(grep "Next Steps" $orgFile | tail -n 1 | egrep -o "${states}")
 
 # Change the current state line in the project org file to DONE
-perl -pi -e 's/^\*.* Next Steps/\* DONE Next Steps/ if $. == '"${nextStepsLine}"';' $file
+perl -pi -e 's/^\*.* Next Steps/\* DONE Next Steps/ if $. == '"${nextStepsLine}"';' $orgFile
 
 # Annotate with projdone having changed the state.
 date=`date "+%Y-%m-%d %a %H:%M"`
 logbookLine=$(expr $nextStepsLine + 2)
 annotationLine=$(expr $logbookLine + 1)
-perl -pi -e 'print "- State \"DONE\" from \"'"${state}"'\"    ['"${date}"']\n" if $. == '"${logbookLine}"';' $file
-perl -pi -e 'print "  Closed via projdone.\n" if $. == '"${annotationLine}"';' $file
-#printf "  - State \"DONE\" from \"${state}\"    [${date}]"
-#printf '    Closed through projdone.'
+perl -pi -e 'print "- State \"DONE\" from \"'"${state}"'\"    ['"${date}"'] \\\\\n" if $. == '"${logbookLine}"';' $orgFile
+perl -pi -e 'print "  Closed via projdone.\n" if $. == '"${annotationLine}"';' $orgFile
 
 # Move the project directory to the completed projects directory
-#mv "$proj" "$completedProjects/"
+mv "$projDir" "$completedProjects/"
