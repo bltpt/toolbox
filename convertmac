@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 # Script to convert a colon-less MAC address into a colon-ful one.
 

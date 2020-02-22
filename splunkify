@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # splunkify: Arg1 Arg2 --> StdOut
 # Process a string into a Splunk query statement

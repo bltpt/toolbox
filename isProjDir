@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # isProjDir: Str --> orgFilePath projDirPath
 # Purpose: to test whether Str is a path to a project directory. If it

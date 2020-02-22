@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Test whether there's an input directory
 if [ "$1" != "" ]
