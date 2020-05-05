@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# viewmd: PathToMarkdownFile -> <view in Lynx>
+# Purpose: to render a Markdown file at PathToMarkdownFile as HTML and
+#          open in Lynx for viewing.
+
+FILE=$1
+
+pandoc $FILE | lynx -stdin
