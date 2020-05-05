@@ -1,0 +1,45 @@
+#!/opt/local/bin/python3
+
+import netaddr
+import inspect
+import sys
+import os
+
+def range2cidrs(ipRange):
+    '''range2cidr(): Str -> ListOfStr
+    Purpose: return a shortest-possible ListOfCIDRs that cover the
+             entire range of IP addresses represented by Str. Str
+             is a en-dash delimited start and end of an IP address
+             range.
+    '''
+
+    try:
+        start, end = ipRange.split('-')
+        ipRange = netaddr.IPRange(start,end)
+        cidrs = ipRange.cidrs()
+        return cidrs
+    except:
+        function=inspect.stack()[0].function
+        print("%s: Error. Did you used an en-dash delimited start and end of an IP address range?" % function)
+
+
+def main(inputRange):
+    '''main(): Str -> StdOut
+    Purpose: to convert an input IP address range to a CIDR or list of
+             CIDRs and print to StdOut.
+    '''
+
+    # Get the ListOfCIDRS
+    cidrs = range2cidrs(inputRange)
+
+    # Print to StdOut
+    for cidr in cidrs:
+        print(cidr)
+
+if __name__ == '__main__':
+    if not os.isatty(0):
+        inputLines = sys.stdin.readlines()
+    else:
+        inputLines = sys.argv[1:]
+    for line in inputLines:
+        main(line)
