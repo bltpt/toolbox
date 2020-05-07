@@ -1,0 +1,5 @@
+#!/bin/bash
+
+year=`date "+%Y"`
+
+cal $1 $year
