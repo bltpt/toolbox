@@ -2,6 +2,12 @@
 
 # Script to convert a colon-less MAC address into a colon-ful one.
 
+# NOTE TO SELF: use getopt or getopts to parse optional args
+# allowing the user to specify what delimiter the input uses and
+# what the output should use, so as to better support oddballs.
+# Alternatively, rewrite the utility in Python and enforce type-
+# checking on the MAC addr and other overkill things.
+
 if [ -z "$1" ]
 then
     echo "Error: no argument"
