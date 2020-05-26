@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-# exploderange: IP address range [maybe list of IP address ranges] --> StdOut
-# Given an input argument of space-delimited start-end IP address
-# pairs, list all of the addresses in the range starting with IP1 and
-# ending with IP2.
+'''exploderange: IP address range [maybe list of IP address ranges] --> StdOut
+   Given an input argument of space-delimited start-end IP address pairs, 
+   list all of the addresses in the range starting with IP1 and ending with
+   IP2.'''
 
 import os
 import sys
@@ -24,6 +24,18 @@ def processOrError(argument):
     if '-' in argument:
         ips = argument.rstrip().split('-')
         cls = netaddr.IPRange
+        if len(ips[1]) < 3:    # Range in 0.0.0.0-12 notation
+            try:
+                octets = ips[0].split('.')
+                octets[-1] = ips[1]
+                ips[1] = ".".join(octets)
+            except Exception as e:
+                print(e)
+        # This doesn't handle IPv6. Do this better by testing
+        # whether ips[1] can be turned into a netaddr.IPAddr object
+        # and if not, trying this IPv4 test and another IPv6.
+        # Must be a clever way to handle both cases at once.
+                
     elif '/' in argument:
         ips = (argument,)
         cls = netaddr.IPNetwork
