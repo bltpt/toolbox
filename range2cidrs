@@ -15,6 +15,18 @@ def range2cidrs(ipRange):
 
     try:
         start, end = ipRange.split('-')
+        if len(end) <= 3:    # Range in 0.0.0.0-12 notation
+            try:
+                octets = start.split('.')
+                octets[-1] = end
+                end = ".".join(octets)
+            except Exception as e:
+                print(e)
+        # This doesn't handle IPv6. Do this better by testing
+        # whether ips[1] can be turned into a netaddr.IPAddr object
+        # and if not, trying this IPv4 test and another IPv6.
+        # Must be a clever way to handle both cases at once.
+
         ipRange = netaddr.IPRange(start,end)
         cidrs = ipRange.cidrs()
         return cidrs
