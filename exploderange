@@ -24,7 +24,7 @@ def processOrError(argument):
     if '-' in argument:
         ips = argument.rstrip().split('-')
         cls = netaddr.IPRange
-        if len(ips[1]) < 3:    # Range in 0.0.0.0-12 notation
+        if len(ips[1]) <= 3:    # Range in 0.0.0.0-12 notation
             try:
                 octets = ips[0].split('.')
                 octets[-1] = ips[1]
