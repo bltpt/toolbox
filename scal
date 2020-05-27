@@ -2,4 +2,11 @@
 
 year=`date "+%Y"`
 
-cal $1 $year
+# If no year is passed, assume this year. Else, run
+# cal with args 1 and 2.
+if [ "$2" == "" ]
+then
+    cal $1 $year
+else
+    cal $1 $2
+fi
