@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+'''Accepts either piped input or a path to a newline-delimited file
+of IP addresses, returns that list of IP addresses with their
+FQDNs.'''
+
+import sys      # necessary for processing CLI arguments.
+import socket   # socket contains a method for fetching a dict of
+                # FDQN, aliaslist, ipaddrlist
+import os       # For to test whether script is invoked with output from pipe.
+import netaddr  # to check whether string is an IP address
+
+#import time     # For to allow the waiting
+#from random import randint   # Used to make requests look more random
+
+# Function Definitions
+################################################################################
+
+# Note to Self: write a function to implement time-outs for
+# environments with stingy local resolvers:
+            # # Wait 5 seconds if line_count is divisible by 20
+            # if line_count / next_modulo == line_count % next_modulo:
+            #     next_modulo = randint(8,20)
+            #     #print "next_modulo is: %s" % next_modulo
+            #     wait = randint(0,9)
+            #     #print "Waiting %s seconds..." % wait
+            #     time.sleep(wait)
+
+def processAddr(address):
+    '''processAddr: Str --> StdOut
+    Purpose: to perform a lookup on Address to retrieve its FQDN, Alias
+             and print those to StdOut
+    '''
+    addr = address.rstrip() # remove newline character from line
+
+    try:
+        addr = netaddr.IPAddress(addr)
+    except netaddr.core.AddrFormatError as e:
+        print("%s\tInvalid IP address" % str(addr))
+        return
+    
+    try:
+        fqdn,alias,ipaddresslist = socket.gethostbyaddr(str(addr))
+        print("%s\t%s" % (addr,fqdn))
+    except socket.herror as e:
+        error = str(e)
+        if "Unknown host" in error:
+            print("%s\tNone" % addr)
+        else:
+            print(e)
+
+# Function Calls
+################################################################################
+
+if __name__ == '__main__':
+    if not os.isatty(0):
+        input = sys.stdin.readlines()
+        for line in input:
+            processAddr(line)
+    else:
+        try:
+            ## First see if the program was invoked with a filename
+            with open(sys.argv[1], 'r') as f:
+                AddressFile = f.readlines()
+                for line in AddressFile:
+                    processAddr(line)
+        except IndexError as e:
+            print('Correct use: nslookupip /path/to/ListOfIPs')
+        except:
+            print("Unexpected error: ", sys.exc_info()[0])
+            raise
