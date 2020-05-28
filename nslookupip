@@ -38,13 +38,13 @@ def processAddr(address):
     except netaddr.core.AddrFormatError as e:
         print("%s\tInvalid IP address" % str(addr))
         return
-    
+
     try:
         fqdn,alias,ipaddresslist = socket.gethostbyaddr(str(addr))
         print("%s\t%s" % (addr,fqdn))
-    except socket.herror as e:
+    except socket.herror or herror as e: # different versions of socket module!
         error = str(e)
-        if "Unknown host" in error:
+        if "Unknown host" or "Host name lookup failure" in error:
             print("%s\tNone" % addr)
         else:
             print(e)
