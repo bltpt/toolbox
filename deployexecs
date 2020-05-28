@@ -18,9 +18,12 @@ except IndexError as e:
 for item in os.walk(cwd):
     if item[0] == cwd:
         for file in item[2]:
+            # various temp file tests...
             if '~' not in file:
-                if os.access(file, os.X_OK):
-                    executables.append(file)
+                if '#' not in file:
+                    if file[0] not in '.':
+                        if os.access(file, os.X_OK): # is executable?
+                            executables.append(file)
 
 for file in executables:
     os.popen('cp %s %s' % (file, dest))
