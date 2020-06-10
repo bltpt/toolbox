@@ -27,27 +27,28 @@ import netaddr  # to check whether string is an IP address
             #     time.sleep(wait)
 
 def processAddr(address):
-    '''processAddr: Str --> StdOut
+    '''processAddr: Str --> Tuple
     Purpose: to perform a lookup on Address to retrieve its FQDN, Alias
-             and print those to StdOut
+             and return a Tuple of a netaddr.IPAddress and Str
+             representation of a domain name, None or message "invalid
+             IP address".
     '''
     addr = address.rstrip() # remove newline character from line
 
     try:
         addr = netaddr.IPAddress(addr)
     except netaddr.core.AddrFormatError as e:
-        print("%s\tInvalid IP address" % str(addr))
-        return
+        return (addr, "invalid IP address")
 
     try:
         fqdn,alias,ipaddresslist = socket.gethostbyaddr(str(addr))
-        print("%s\t%s" % (addr,fqdn))
+        return (addr,fqdn)
     except socket.herror or herror as e: # different versions of socket module!
         error = str(e)
         if "Unknown host" or "Host name lookup failure" in error:
-            print("%s\tNone" % addr)
+            return (addr, None)
         else:
-            print(e)
+            raise e
 
 # Function Calls
 ################################################################################
@@ -56,14 +57,16 @@ if __name__ == '__main__':
     if not os.isatty(0):
         input = sys.stdin.readlines()
         for line in input:
-            processAddr(line)
+            addr, name = processAddr(line)
+            print("%s\t%s" % (addr, name))
     else:
         try:
             ## First see if the program was invoked with a filename
             with open(sys.argv[1], 'r') as f:
                 AddressFile = f.readlines()
                 for line in AddressFile:
-                    processAddr(line)
+                    addr, name = processAddr(line)
+                    print("%s\t%s" % (addr, name))
         except IndexError as e:
             print('Correct use: nslookupip /path/to/ListOfIPs')
         except:
