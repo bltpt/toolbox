@@ -1,12 +1,18 @@
 #!/bin/bash
 
-year=`date "+%Y"`
-
-# If no year is passed, assume this year. Else, run
-# cal with args 1 and 2.
-if [ "$2" == "" ]
+if [[ -z $1 ]]
 then
-    cal $1 $year
-else
-    cal $1 $2
+    cal
+    exit
 fi
+    
+if [[ -z $2 ]]
+then
+    month=$1
+    year=`date "+%Y"`
+else
+    month=$1
+    year=$2
+fi
+
+cal $month $year
