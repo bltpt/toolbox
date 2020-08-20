@@ -1,0 +1,7 @@
+#!/bin/sh
+
+source=$1
+
+sourceOut=`echo $source | sed "s/\.c$//"`
+
+gcc $source -o $sourceOut.out

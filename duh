@@ -3,13 +3,13 @@
 # duh: print output of du in sorted, human-readable format
 
 # Test whether there's a flag and a path
-if [[ -e $2 ]]
+if [ -z $2 ]
 then
+    path=$1
+else
     arg=$1
     path=$2
     #echo 'The args were' $arg $path
-else
-    path=$1
 fi
 
 # Test whether the -r flag is present. If so,
@@ -17,20 +17,20 @@ fi
 if [ -z $arg ]
 then
     #echo "No arg found"
-    files=`du $path | sort -n | cut -f 2`
+    for file in `du $path | sort -n | cut -f 2`; do du -h $file; done
 else
     if [[ "$arg" == '-r' ]]
     then
 	#echo "The arg -r was found"
-	files=`du $path | sort -nr | cut -f 2`
+	for file in `du $path | sort -nr | cut -f 2`; do du -h $file; done
     else
 	#echo "The arg " $arg " was found" 
-	files=`du $path | sort -n | cut -f 2`
+	for file in `du $path | sort -n | cut -f 2`; do du -h $file; done
     fi
 fi
 
 # Run du on the list of files that have been sorted by
 # their byte size above.
-for file in $files
-do du -h $file 
-done
+# for file in $files
+# do du -h $file 
+# done
