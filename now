@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from datetime import timedelta
+import sys
 
 # now: a calculator for time offsets
 # Use: now [ARG] -- print the current time, or the time
@@ -11,17 +12,17 @@ def parseArg(arg):
     '''parseArg(): Str --> Datetime.Timedelta
     Purpose: to parse Str into time offset and return it as a
              Datetime.Timedelta object. Str must be of the form
-             <+ or -><digits><unit time>.
+             <+ or -><digits><unit time>. Only those units
+             that can be passed to datetime.timedelta() are
+             supported.
     Examples: parseArg('-34m'), parseArg('+22w')
               parseArg('-11d'), parseArg('+2H'), parseArg('-74M'),
               parseArg('+88S')
     '''
-    time=int(arg[0:-1]])
+    time=int(arg[0:-1])
     unit=arg[-1]
 
-    if unit == 'm':
-        return timedelta(months=time)
-    elif unit == 'w':
+    if unit == 'w':
         return timedelta(weeks=time)
     elif unit == 'd':
         return timedelta(days=time)
@@ -32,12 +33,11 @@ def parseArg(arg):
     elif unit == 'S':
         return timedelta(seconds=time)
     else:
-        raise ValueError 
-        
+        raise ValueError("Argument isn't of the form [+|-][digits][w|d|H|M|S]")        
 
 # Note: for now, we're using timezone unaware objects. All times
 #       will be given in local time. This might be a problem for 
-#       daylight savings time.
+#       daylight savings time. This to get the thing working.
 def main(arg=None):
     '''main(): MaybeStr --> StdOut
     Purpose: to print the current time, or the time specified
@@ -48,6 +48,15 @@ def main(arg=None):
     '''
     if not arg:
         print(datetime.now())
-
     else:
-        parseArg(arg)
+        delta = parseArg(arg)
+        print(datetime.now() + delta)
+
+if __name__ == '__main__':
+    arg = None
+    try:
+        arg = sys.argv[1]
+    except IndexError:
+        main()
+    if arg:
+        main(arg)
