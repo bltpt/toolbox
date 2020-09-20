@@ -1,0 +1,53 @@
+#!/usr/bin/python3
+
+from datetime import datetime
+from datetime import timedelta
+
+# now: a calculator for time offsets
+# Use: now [ARG] -- print the current time, or the time
+#                   specified by offset ARG
+
+def parseArg(arg):
+    '''parseArg(): Str --> Datetime.Timedelta
+    Purpose: to parse Str into time offset and return it as a
+             Datetime.Timedelta object. Str must be of the form
+             <+ or -><digits><unit time>.
+    Examples: parseArg('-34m'), parseArg('+22w')
+              parseArg('-11d'), parseArg('+2H'), parseArg('-74M'),
+              parseArg('+88S')
+    '''
+    time=int(arg[0:-1]])
+    unit=arg[-1]
+
+    if unit == 'm':
+        return timedelta(months=time)
+    elif unit == 'w':
+        return timedelta(weeks=time)
+    elif unit == 'd':
+        return timedelta(days=time)
+    elif unit == 'H':
+        return timedelta(hours=time)
+    elif unit == 'M':
+        return timedelta(minutes=time)
+    elif unit == 'S':
+        return timedelta(seconds=time)
+    else:
+        raise ValueError 
+        
+
+# Note: for now, we're using timezone unaware objects. All times
+#       will be given in local time. This might be a problem for 
+#       daylight savings time.
+def main(arg=None):
+    '''main(): MaybeStr --> StdOut
+    Purpose: to print the current time, or the time specified
+             by offset MaybeStr. Right now, MaybeStr must be a
+             single time unit. Look into supporting multiple units
+             later. (e.g. -2d -3H -4M -3S)
+    Examples: main('-3d'), main('-4h'), main('+56w') 
+    '''
+    if not arg:
+        print(datetime.now())
+
+    else:
+        parseArg(arg)
