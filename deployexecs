@@ -28,3 +28,26 @@ for item in os.walk(cwd):
 
 for file in executables:
     os.popen('cp %s %s' % (file, dest))
+
+## New stuff
+
+def hashFile(f):
+    '''hashFile(): io.BufferedReader -> Str
+    Purpose: read the io.BufferedReader and print its SHA256 hash.
+    '''
+    hashValue = hashlib.sha256(f)
+    return hashValue.hexdigest()
+
+# For each file in target, get hash
+
+# For each file being copied, get hash
+
+# If the thing being copied doesn't exist in the target directory, copy
+# it.
+
+# If the thing being copied has the same hash as the file at the
+# target, do nothing.
+
+# If the thing being copies has a different hash than the file at the
+# target, copy it and say as much.
+
