@@ -4,7 +4,6 @@
 
 import os
 import sys
-import hashlib
 
 cwd = os.getcwd() # current working directory
 
@@ -27,6 +26,7 @@ for item in os.walk(cwd):
                             executables.append(file)
 
 for file in executables:
+    print("copying %s" % file)
     os.popen('cp %s %s' % (file, dest))
 
 ## New stuff
