@@ -20,19 +20,20 @@ fi
 
 if [ -f $arg1 ]
 then
+    FILE=$arg1
     echo "found a file"
-    hash=`$SHASUM $arg1 2>/dev/null | cut -f 1 -d " "`
-    extCount=`echo $arg1 | grep -o "\." | wc -l`
+    hash=`$SHASUM $FILE 2>/dev/null | cut -f 1 -d " "`
+    extCount=`echo $FILE | grep -o "\." | wc -l`
     cutField=`echo "$extCount+1" | bc`
     if [ $extCount == 0 ]
     then
 	echo "extCount is 0"
-	hash=`$SHASUM $arg1 2>/dev/null | cut -f 1 -d " "`
-	echo $arg1 $hash	
+	hash=`$SHASUM $FILE 2>/dev/null | cut -f 1 -d " "`
+	echo $FILE-$hash	
     else
-	newPrefix=`echo $arg1 | cut -f 1-${extCount} -d "."`
-	extension=`echo $arg1 | cut -f ${cutField} -d "."`
-	echo $arg1 $hash $newPrefix $extension
+	newPrefix=`echo $FILE | cut -f 1-${extCount} -d "."`
+	extension=`echo $FILE | cut -f ${cutField} -d "."`
+	echo $newPrefix-$hash.$extension
     fi
 else
     echo "error: $arg1 doesn't exist"
