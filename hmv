@@ -6,29 +6,34 @@
 arg1=$1
 arg2=$2
 
+if [ `uname` == "Darwin" ]
+then
+    SHASUM="shasum 256"
+elif [ `uname` == "Linux" ]
+then
+    SHASUM="sha256sum"
+else
+    echo "Error -- unsupported platform. Can't tell what SHA utility to use."
+    exit
+fi
+
+
 if [ -f $arg1 ]
 then
     echo "found a file"
-    hash=`shasum 256 $arg1 2>/dev/null | cut -f 1 -d " "`
+    hash=`$SHASUM $arg1 2>/dev/null | cut -f 1 -d " "`
     extCount=`echo $arg1 | grep -o "\." | wc -l`
     cutField=`echo "$extCount+1" | bc`
     if [ $extCount == 0 ]
     then
 	echo "extCount is 0"
-	hash=`shasum 256 $arg1 2>/dev/null | cut -f 1 -d " "`
+	hash=`$SHASUM $arg1 2>/dev/null | cut -f 1 -d " "`
 	echo $arg1 $hash	
     else
 	newPrefix=`echo $arg1 | cut -f 1-${extCount} -d "."`
 	extension=`echo $arg1 | cut -f ${cutField} -d "."`
 	echo $arg1 $hash $newPrefix $extension
     fi
-elif [ -d ${arg1} ]
-then
-    echo "found a directory"
-    now=`python -c "import time; print '%.20f' % time.time()"`
-    hash=`echo $arg1 $now | shasum 256 - 2>/dev/null | cut -f 1 -d " "`
-    newName=$arg1-$hash
-    echo $newName
 else
     echo "error: $arg1 doesn't exist"
 fi
