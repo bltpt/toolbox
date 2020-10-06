@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# hmv: hyper move
+# hmv: hash move
 # Purpose: mv a file from <here> to <there-sha256sum>
 
 arg1=$1
 arg2=$2
 
+# Maybe add support for different hash algorithms?
 if [ `uname` == "Darwin" ]
 then
     SHASUM="shasum 256"
@@ -13,29 +14,30 @@ elif [ `uname` == "Linux" ]
 then
     SHASUM="sha256sum"
 else
-    echo "Error -- unsupported platform. Can't tell what SHA utility to use."
+    echo "Error -- unsupported platform. Can't tell what SHA256 utility to use."
     exit
 fi
 
 
 if [ -f $arg1 ]
 then
-    FILE=$arg1
-    echo "found a file"
-    hash=`$SHASUM $FILE 2>/dev/null | cut -f 1 -d " "`
-    extCount=`echo $FILE | grep -o "\." | wc -l`
-    cutField=`echo "$extCount+1" | bc`
-    if [ $extCount == 0 ]
-    then
-	echo "extCount is 0"
-	hash=`$SHASUM $FILE 2>/dev/null | cut -f 1 -d " "`
-	echo $FILE-$hash	
-    else
-	newPrefix=`echo $FILE | cut -f 1-${extCount} -d "."`
-	extension=`echo $FILE | cut -f ${cutField} -d "."`
-	echo $newPrefix-$hash.$extension
-    fi
-else
-    echo "error: $arg1 doesn't exist"
-fi
+    for myfile in `ls $arg1`; do
+	echo "found file $myfile"
+	hash=`$SHASUM $myfile 2>/dev/null | cut -f 1 -d " "`
+	extCount=`echo $myfile | grep -o "\." | wc -l`
+	cutField=`echo "$extCount+1" | bc`
 
+	if [ $extCount == 0 ]
+	then
+	    echo "extCount is 0"
+	    hash=`$SHASUM $myfile 2>/dev/null | cut -f 1 -d " "`
+	    echo $file-$hash
+	else
+	    newPrefix=`echo $myfile | cut -f 1-${extCount} -d "."`
+	    extension=`echo $myfile | cut -f ${cutField} -d "."`
+	    echo $newPrefix-$hash.$extension
+	fi
+    done
+else
+    echo "error: file $arg1 doesn't exist"
+fi
