@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+'''scrubnewlines: CSVFile -> StdOut
+   Purpose: to read the CSVFile, replace all of the newlines that
+           are inside field values with a space (like a sane
+           person) and print the resulting, useable csv file to
+           StdOut.
+'''
+
+import sys
+import csv
+import io
+
+def cleanCSV(stringIO):
+    '''cleanCSV(): _io.StringIO --> StdOut
+    Purpose: Converts the input into a csv.DictReader object for
+             the purpose of capturing the CSV's values as descrete
+             objects, allowing us to scan them for newlines to
+             replace. Converts it back to a csv and prints to
+             StdOut.
+    '''
+    csvDict = csv.DictReader(stringIO)
+    rowList = list(csvDict)
+
+    # get rid of newlines and replace nulls
+    for row in rowList:
+        for k,v in row.items():
+            if v:
+                row[k] = v.replace('\n',' ')
+            else:
+                row[k] = 'NULL'
+
+    # print header row
+    header = ''
+    for key in rowList[0].keys():
+        header = header+key+','
+    header = header.strip(',')
+    print(header)
+
+    # print rows
+    for row in rowList:
+        rowPrint = ''
+        for value in row.values():
+            rowPrint = rowPrint+value+','
+        rowPrint = rowPrint.strip(',')
+        print(rowPrint)
+
+def main(path):
+    '''main(): Str -> StdOut
+    Purpose: treat Str as a file path, read it, replace the newlines
+             inside each cell with a space, and print the new csv
+             to StdOut.
+    '''
+    print(path)
+    try:
+        with open(path,'r') as f:
+            csvFile = f.read()
+            stringIO = io.StringIO(csvFile)
+            cleanCSV(stringIO)
+    except Exception as e:
+        print(e)
+
+if __name__ == '__main__':
+    main(sys.argv[1])
