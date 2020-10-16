@@ -18,6 +18,7 @@ else
     exit
 fi
 
+#here=`echo $arg1 | sed s/
 
 if [ -f $arg1 ]
 then
