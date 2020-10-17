@@ -51,7 +51,7 @@ def main(path):
              inside each cell with a space, and print the new csv
              to StdOut.
     '''
-    print(path)
+    
     try:
         with open(path,'r') as f:
             csvFile = f.read()
