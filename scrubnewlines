@@ -10,6 +10,7 @@
 import sys
 import csv
 import io
+import argparse
 
 def cleanCSV(stringIO):
     '''cleanCSV(): _io.StringIO --> StdOut
@@ -61,4 +62,19 @@ def main(path):
         print(e)
 
 if __name__ == '__main__':
+    try:
+        assert sys.version_info >= (3, 6)
+    except:
+        sys.exit('scrubnewlines requires Python v3.6 or higher, because older versions of the csv module do not implement the DictReader class as OrderedDicts.')
+    desc='scrubnewlines will determine the format of the input file automatically (one of csv, tsv, xls, or xlsx), and outputs the scrubbed content of the file in that format to stdout.'
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("file",
+                        help='the file needing newlines scrubbed from its fields')
+    parser.add_argument("--output",
+                        "-o",
+                        help='path to optional output file')
+    parser.add_argument("--output-format",
+                        choices=['csv', 'tsv', 'xls', 'xlsx'],
+                        help='optional format to save as when the --output option is given')
+    args = parser.parse_args()
     main(sys.argv[1])
