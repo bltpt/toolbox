@@ -11,6 +11,9 @@ else
 fi
 
 # Find the project files
+# Update this so that only proper project files are collected, not all
+# files ending in .org. Do this by finding files and comparing their
+# lowercase names to their uppercase parent directory names.
 if [ $input == 0 ]
    then
    projFiles=$(find -L $root -maxdepth 2 -type f -name \*.org)
