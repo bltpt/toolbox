@@ -85,8 +85,12 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--algorithm",
                         help = "hash algorithm to use. Default is SHA256.",
                         default = 'sha256')
+    parser.add_argument("--max-depth",
+                        help = "(in development) number of directories down \
+                               in the tree to compare files.",
+                        type = int)
     args = parser.parse_args()
-    try: # How to handle BrokenPipeError from | head?
+    try:                # How to handle BrokenPipeError from | head?
         main(args.pathRoot,args.algorithm)
     except KeyboardInterrupt: 
         try:
