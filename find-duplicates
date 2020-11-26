@@ -8,6 +8,10 @@ import hashlib
 import os
 import argparse
 import sys
+#                                             #
+# from signal import signal, SIGPIPE, SIG_DFL # Slow solution to the | head prob.
+# signal(SIGPIPE,SIG_DFL)                     # 
+
 
 def hashFile(filePath, algorithm):
     '''hashFile(): Str1 Str2 --> StrA
@@ -44,11 +48,13 @@ def main(pathRoot, algorithm):
     # current loop.
     seen = dict()
 
-    if os.path.isdir(pathRoot):
+    realPath = os.path.realpath(pathRoot)
+
+    if os.path.isdir(realPath):
         try:
-            for dirPath, dirNames, fileNames in os.walk(pathRoot):
+            for dirPath, dirNames, fileNames in os.walk(realPath):
                 for fileName in fileNames:
-                    filePath = dirPath.strip('/')+'/'+fileName
+                    filePath = dirPath.rstrip('/')+'/'+fileName
                     hash = hashFile(filePath,algorithm)
                     if hash in seen.keys():
                         if seen[hash]['printed'] == 0:
@@ -65,6 +71,7 @@ def main(pathRoot, algorithm):
                                       'printed' : 0 }
                                   
         except Exception as e:
+            print("main(): exception at line 71")
             print(e)
     else:
         sys.exit("Error: \"%s\" is not a valid directory." % pathRoot)
@@ -79,4 +86,10 @@ if __name__ == '__main__':
                         help = "hash algorithm to use. Default is SHA256.",
                         default = 'sha256')
     args = parser.parse_args()
-    main(args.pathRoot,args.algorithm)
+    try: # How to handle BrokenPipeError from | head?
+        main(args.pathRoot,args.algorithm)
+    except KeyboardInterrupt: 
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0) # Why does Internet say to do this?
