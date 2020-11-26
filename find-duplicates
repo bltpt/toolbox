@@ -6,6 +6,8 @@
 
 import hashlib
 import os
+import argparse
+import sys
 
 def hashFile(filePath, algorithm):
     '''hashFile(): Str1 Str2 --> StrA
@@ -15,7 +17,7 @@ def hashFile(filePath, algorithm):
     if algorithm in hashlib.algorithms_guaranteed:
         hasher = getattr(hashlib, algorithm)()
     else:
-        raise ValueError("Unsupported hash algorithm: %s" % algorithm)
+        raise ValueError("Error: unsupported hash algorithm \"%s\"." % algorithm)
 
     blocksize = 65536
 
@@ -27,36 +29,54 @@ def hashFile(filePath, algorithm):
 
     return(hasher.hexdigest())
 
-def main(dirPath, algorithm):
+def main(pathRoot, algorithm):
     '''main(): Str1 Str2 -> StdOut
-    Purpose: to find all duplicate files in directory path Str1 using
-             hash algorithm Str2, printing their hashes and file paths
-             to StdOut.
+    Purpose: to find all duplicate files in directory Str1 using hash
+             algorithm Str2, printing their hashes and file paths to
+             StdOut.
     '''
 
     # Need support for -max-depth optional arg.
 
-    # Walk the path at dirPath, hash each file, check whether hash has
-    # been seen, and if not, add to the "seen" list. If it's already
+    # Walk the path at pathRoot, hash each file, check whether hash has
+    # been seen, and if not, add to the "seen" dict. If it's already
     # been seen, print the already "seen" one and the one in the
     # current loop.
-    seen = list()
+    seen = dict()
 
-    # will need to recurse through each directory it finds. See if
-    # there's a native way to do this with the os module, else,
-    # put it in an function and call it recursively.
-    try:
-        for item in os.walk(dirPath):
-            if item[0] == cwd:
-                for file in item[2]:
-                    # various temp file tests...
-                    if '~' not in file:
-                    if '#' not in file:
-                        if file[0] not in '.':
-                            if os.access(file, os.X_OK): # is executable?
-                                executables.append(file)
-   
-    
-    
-    
+    if os.path.isdir(pathRoot):
+        try:
+            for dirPath, dirNames, fileNames in os.walk(pathRoot):
+                for fileName in fileNames:
+                    filePath = dirPath.strip('/')+'/'+fileName
+                    hash = hashFile(filePath,algorithm)
+                    if hash in seen.keys():
+                        if seen[hash]['printed'] == 0:
+                            print(hash+"	"+seen[hash]['fullPath'])
+                            print(hash+"	"+filePath)
+                            seen[hash]['printed'] = 1
+                        elif seen[hash]['printed'] == 1:
+                            print(hash+"	"+filePath)
+                        else:
+                            raise Exception("Something went wrong \
+                                            in the seen dict.")
+                    else:
+                        seen[hash] = {'fullPath' : filePath,
+                                      'printed' : 0 }
+                                  
+        except Exception as e:
+            print(e)
+    else:
+        sys.exit("Error: \"%s\" is not a valid directory." % pathRoot)
 
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("pathRoot",
+                        help = "path to a directory",
+                        type=str)
+    parser.add_argument("-a", "--algorithm",
+                        help = "hash algorithm to use. Default is SHA256.",
+                        default = 'sha256')
+    args = parser.parse_args()
+    main(args.pathRoot,args.algorithm)
