@@ -1,16 +1,45 @@
 #!/usr/bin/python3
 
-# hcp: File(s) [OPTIONS] -> File(s)
-# Purpose: to copy File(s) to File(s), replacing the(ir) filenames
-#          with their file hashes. Any extensions are preserved,
-#          and the default hash algorithm is SHA256. A different
-#          hash algorithm can be specified.
+# hcp: [OPTIONS] InFile ToPath -> OutFile
+# Purpose: to copy a single InFile to ToPath/OutFile, replacing its
+#          filename with its file hash. If OutFile already exists, it
+#          is overwritten. Any files Any extensions are preserved, and
+#          the default hash algorithm is SHA256. A different hash
+#          algorithm can be specified.
 
 import hashlib
 import os
 import argparse
 import sys
+import shutil
 
+def copyFile(fromFile, toDir, fileHash, preserve):
+    '''copyFile(): Str1 Str2 Str3 Bool -> FileOnDisc
+    Purpose: to copy the file at Str1 to a new file at directory Str2
+             with filename Str3, with original file metadata if Bool is
+             True, and without if Bool is False.
+    '''
+
+    oldFileName = os.path.basename(fromFile)
+    oldFileNameParts = oldFileName.split('.')
+    oldFileNameParts.pop(0)
+    if oldFileNameParts:
+        extension = '.'+'.'.join(oldFileNameParts)
+        newFileName = fileHash+extension
+    else:
+        newFileName = fileHash
+
+    destFile = toDir+'/'+newFileName # May need to have a check to
+                                     # delete duplicate '/'
+
+    try:
+        if preserve:
+            shutil.copy2(fromFile, destFile)
+        else:
+            shutil.copy(fromFile, destFile)
+    except Exception as e:
+        print(e)
+    
 def hashFile(filePath, algorithm):
     '''hashFile(): Str1 Str2 --> StrA
     Purpose: to hash the file at Str1 with the algorithm of Str2 and
@@ -31,67 +60,83 @@ def hashFile(filePath, algorithm):
 
     return(hasher.hexdigest())
 
-def main(pathRoot, algorithm):
-    '''main(): Str1 Str2 -> StdOut
-    Purpose: to find all duplicate files in directory Str1 using hash
-             algorithm Str2, printing their hashes and file paths to
-             StdOut.
+def hashCopy(fromFile, toDir, algorithm, preserve):
+    '''hashCopy(): Str1 Str2 Str3 Bool -> FileOnDisc
+    Purpose: to copy the file at Str1 to a file in directory at Str2,
+             where the new file bears the filehash of the original file
+             using hash algorithm Str3. If Bool is True, preserve the
+             filesystem attributes in the new file.
     '''
 
-    # Need support for -max-depth optional arg.
+    try:
+        if os.path.isdir(toDir):
+            if os.path.isfile(fromFile):
+                fileHash = hashFile(fromFile, algorithm)
+                copyFile(fromFile, toDir, fileHash, preserve)
+            else:
+                if isinstance(fromFile,str):
+                    raise FileNotFoundError("File %s does not exist."
+                                            % fromFile)
+        else:
+            if isinstance(toDir,str):
+                raise FileNotFoundError("Error: directory %s does not "
+                                        "exist." % toDir)
+    except TypeError as e:
+        print(e)
+        raise TypeError("Error: A non-string object was passed "
+                        "as a path to a file.")
 
-    # Walk the path at pathRoot, hash each file, check whether hash has
-    # been seen, and if not, add to the "seen" dict. If it's already
-    # been seen, print the already "seen" one and the one in the
-    # current loop.
-    seen = dict()
+def main(namespace):
 
-    realPath = os.path.realpath(pathRoot)
+    '''main(): Namespace -> StdOut
+    Purpose: to take the hash of a file at value "fromFile" and
+             copy the file at that path to a file in the directory
+             at value "toDir", with its filehash as its filename.
+    '''
+    
+    try:
+        fromFile = namespace.fromFile
+        toDir = namespace.toDir
+        preserve = namespace.p
+        algorithm = namespace.algorithm
+    except Exception as e:
+        if type(namespace) != 'Namespace':
+            sys.exit("main(): Error parsing arguments. Received input"
+                     " of type \"%s\", while a Namespace is required."
+                     % type(namespace))
+        else:
+            sys.exit("main(): unknown error with arguments.")
+            
+    realFromFile = os.path.realpath(fromFile)
+    realToDir = os.path.realpath(toDir)
 
-    if os.path.isdir(realPath):
-        try:
-            for dirPath, dirNames, fileNames in os.walk(realPath):
-                for fileName in fileNames:
-                    filePath = dirPath.rstrip('/')+'/'+fileName
-                    hash = hashFile(filePath,algorithm)
-                    if hash in seen.keys():
-                        if seen[hash]['printed'] == 0:
-                            print(hash+"	"+seen[hash]['fullPath'])
-                            print(hash+"	"+filePath)
-                            seen[hash]['printed'] = 1
-                        elif seen[hash]['printed'] == 1:
-                            print(hash+"	"+filePath)
-                        else:
-                            raise Exception("Something went wrong \
-                                            in the seen dict.")
-                    else:
-                        seen[hash] = {'fullPath' : filePath,
-                                      'printed' : 0 }
-                                  
-        except Exception as e:
-            print("main(): exception at line 71")
-            print(e)
-    else:
-        sys.exit("Error: \"%s\" is not a valid directory." % pathRoot)
+    try:
+        hashCopy(realFromFile, realToDir, algorithm, preserve)
+    except FileNotFoundError as e:
+        print(e)
+    except Exception as e:
+        print(e)
 
 
 if __name__ == '__main__':
+    # Options: preserve attributes, preserve creation date.
     parser = argparse.ArgumentParser()
-    parser.add_argument("pathRoot",
-                        help = "path to a directory",
-                        type=str)
+    parser.add_argument("-p",
+                        help = "preserve all filesystem attributes",
+                        action='store_true')
     parser.add_argument("-a", "--algorithm",
                         help = "hash algorithm to use. Default is SHA256.",
                         default = 'sha256')
-    parser.add_argument("--max-depth",
-                        help = "(in development) number of directories down \
-                               in the tree to compare files.",
-                        type = int)
-    args = parser.parse_args()
-    try:                # How to handle BrokenPipeError from | head?
-        main(args.pathRoot,args.algorithm)
+    parser.add_argument("fromFile",
+                        help = "path to a file to be copied",
+                        )
+    parser.add_argument("toDir",
+                        help = "directory to which file will be copied",
+                        )
+    try:
+        main(parser.parse_args())
     except KeyboardInterrupt: 
         try:
             sys.exit(0)
         except SystemExit:
-            os._exit(0) # Why does Internet say to do this?
+            os._exit(0)
