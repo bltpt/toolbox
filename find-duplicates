@@ -1,0 +1,99 @@
+#!/usr/bin/python3
+
+# find-duplicates: DirPath [Options] -> StdOut
+# Purpose: to return a list of duplicate files residing in the
+#          directory hierarchy in DirPath.
+
+import hashlib
+import os
+import argparse
+import sys
+#                                             #
+# from signal import signal, SIGPIPE, SIG_DFL # Slow solution to the | head prob.
+# signal(SIGPIPE,SIG_DFL)                     # 
+
+
+def hashFile(filePath, algorithm):
+    '''hashFile(): Str1 Str2 --> StrA
+    Purpose: to hash the file at Str1 with the algorithm of Str2 and
+             return its hash as StrA.
+    '''
+    if algorithm in hashlib.algorithms_guaranteed:
+        hasher = getattr(hashlib, algorithm)()
+    else:
+        raise ValueError("Error: unsupported hash algorithm \"%s\"." % algorithm)
+
+    blocksize = 65536
+
+    with open(filePath, 'rb') as f:
+        buf = f.read(blocksize)
+        while len(buf) > 0:
+            hasher.update(buf)
+            buf = f.read(blocksize)
+
+    return(hasher.hexdigest())
+
+def main(pathRoot, algorithm):
+    '''main(): Str1 Str2 -> StdOut
+    Purpose: to find all duplicate files in directory Str1 using hash
+             algorithm Str2, printing their hashes and file paths to
+             StdOut.
+    '''
+
+    # Need support for -max-depth optional arg.
+
+    # Walk the path at pathRoot, hash each file, check whether hash has
+    # been seen, and if not, add to the "seen" dict. If it's already
+    # been seen, print the already "seen" one and the one in the
+    # current loop.
+    seen = dict()
+
+    realPath = os.path.realpath(pathRoot)
+
+    if os.path.isdir(realPath):
+        try:
+            for dirPath, dirNames, fileNames in os.walk(realPath):
+                for fileName in fileNames:
+                    filePath = dirPath.rstrip('/')+'/'+fileName
+                    hash = hashFile(filePath,algorithm)
+                    if hash in seen.keys():
+                        if seen[hash]['printed'] == 0:
+                            print(hash+"	"+seen[hash]['fullPath'])
+                            print(hash+"	"+filePath)
+                            seen[hash]['printed'] = 1
+                        elif seen[hash]['printed'] == 1:
+                            print(hash+"	"+filePath)
+                        else:
+                            raise Exception("Something went wrong \
+                                            in the seen dict.")
+                    else:
+                        seen[hash] = {'fullPath' : filePath,
+                                      'printed' : 0 }
+                                  
+        except Exception as e:
+            print("main(): exception at line 71")
+            print(e)
+    else:
+        sys.exit("Error: \"%s\" is not a valid directory." % pathRoot)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("pathRoot",
+                        help = "path to a directory",
+                        type=str)
+    parser.add_argument("-a", "--algorithm",
+                        help = "hash algorithm to use. Default is SHA256.",
+                        default = 'sha256')
+    parser.add_argument("--max-depth",
+                        help = "(in development) number of directories down \
+                               in the tree to compare files.",
+                        type = int)
+    args = parser.parse_args()
+    try:                # How to handle BrokenPipeError from | head?
+        main(args.pathRoot,args.algorithm)
+    except KeyboardInterrupt: 
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0) # Why does Internet say to do this?
