@@ -45,20 +45,61 @@ def cleanCSV(stringIO):
         rowPrint = rowPrint.strip(',')
         print(rowPrint)
 
+def cleanTSV(stringIO):
+    '''cleanTSV(): _io.StringIO -> StdOut
+    Purpose: to scrub a tab-delimited _io.StringIO object of newlines
+             in its field values, then print them to StdOut as TSV.
+    '''
+    delim = "	"
+    tsvDict = csv.DictReader(stringIO, delimiter="	")
+    rowList = list(tsvDict)
+
+    # get rid of newlines and replace nulls
+    for row in rowList:
+        for k,v in row.items():
+            if v:
+                row[k] = v.replace('\n',' ')
+            else:
+                row[k] = 'NULL'
+
+    # print header row
+    header = ''
+    for key in rowList[0].keys():
+        header = header+key+delim
+    header = header.strip(delim)
+    print(header)
+
+    # print rows
+    for row in rowList:
+        rowPrint = ''
+        for value in row.values():
+            rowPrint = rowPrint+value+delim
+        rowPrint = rowPrint.strip(delim)
+        print(rowPrint)
+    
+    
 def main(path):
     '''main(): Str -> StdOut
     Purpose: treat Str as a file path, read it, replace the newlines
              inside each cell with a space, and print the new csv
              to StdOut.
     '''
-    
+    delim = "	"
     try:
-        with open(path,'r') as f:
+        with open(path,'r', newline='') as f:
             csvFile = f.read()
             stringIO = io.StringIO(csvFile)
-            cleanCSV(stringIO)
+            if delim in ("	"):
+                cleanTSV(stringIO)
+            else:
+                cleanCSV(stringIO)
     except Exception as e:
         print(e)
 
+# NEED TO IMPLEMENT THE FOLLOWING:
+# - argparse to select supported delimiters
+# - generalize cleanCSV and cleanTSV for arbitrary delims
+# - don't allow execution with arbitrary delims, because
+#   there could be more edge cases.
 if __name__ == '__main__':
     main(sys.argv[1])
