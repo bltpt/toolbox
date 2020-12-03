@@ -3,17 +3,14 @@
 # Test whether there's an input directory
 if [ "$1" != "" ]
 then
-    root="./`echo $1 | sed 's/\.\|\///g'`"
+    root="./`echo $1 | sed -E 's/\.|\///g'`"
     input=1
 else
-    root="./"
+    root="."
     input=0
 fi
 
 # Find the project files
-# Update this so that only proper project files are collected, not all
-# files ending in .org. Do this by finding files and comparing their
-# lowercase names to their uppercase parent directory names.
 if [ $input == 0 ]
    then
    projFiles=$(find -L $root -maxdepth 2 -type f -name \*.org)
@@ -32,6 +29,20 @@ results=()
 # For each file, determine the status
 for file in $projFiles
 do
+
+    # Determine project name. If the name of the org file does not
+    # have a case-insensitive match with its parent directory,
+    # skip this loop since it's not the project file for its project.
+    dirFile=`echo $file | sed "s/^\.\///"`
+    dir=`echo $dirFile | cut -f 1 -d "/"`
+    fileNameBase=`echo $dirFile | cut -f 2 -d "/" | sed "s/\.org$//g"`
+    dirLower=`echo "$dir" | tr [:upper:] [:lower:]`
+    if [ "$dirLower" == "$fileNameBase" ]
+    then
+	project="$dir"
+    else
+	continue
+    fi
 
     # Determine the supported states in the given org file, if any.
     headerLine=`head -n 1 $file`
@@ -94,10 +105,6 @@ do
 	fi
     fi
     
-    
-    # Shorten project name
-    project=$(echo $file | sed "s/^.\/*//g" | sed "s/\/.*$//g")
-
     # Results Delimeter
     # Could replace this with '\x00'
     delim=$(printf '\xe2\x98\x95')
