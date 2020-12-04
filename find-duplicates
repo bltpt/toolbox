@@ -12,6 +12,55 @@ import sys
 # from signal import signal, SIGPIPE, SIG_DFL # Slow solution to the | head prob.
 # signal(SIGPIPE,SIG_DFL)                     # 
 
+def processDupes(root, fileNames, algorithm):
+    '''processDupes(): Str1 List Str2 -> StdOut
+    Purpose: for each fileName in List, hash it with algorithm Str2,
+             check for the hash value having already been seen, and
+             if so, print it and the fileName to StdOut.
+    '''
+    seen = dict() # Holds the first instance of each hash and its
+                  # file. How dangerous is this for large trees?
+
+    for fileName in fileNames:
+        filePath = root.rstrip('/')+'/'+fileName
+        hashValue = hashFile(filePath,algorithm)
+        if hashValue in seen.keys():
+            if seen[hashValue]['printed'] == 0:
+                print(hashValue+"	"+seen[hashValue]['fullPath'])
+                print(hashValue+"	"+filePath)
+                seen[hashValue]['printed'] = 1
+            elif seen[hashValue]['printed'] == 1:
+                print(hashValue+"	"+filePath)
+            else:
+                raise Exception("Something went wrong \
+                                 in the seen dict.")
+        else:
+            seen[hashValue] = {'fullPath' : filePath,
+                               'printed' : 0 }
+
+def printDupes(path,algorithm,depth=None):
+    '''printDupes(): Str1 Str2 [Int] --> StdOut
+    Purpose: to walk the path at Str1 in its entirety---or if Int is
+             given, Int many levels down the Path---looking for
+             duplicate files. For each duplicate file, print its hash
+             value using algorithm Str2 and its file path to StdOut.
+    '''
+
+    # This method is inefficient, since os.walk() enumerates every
+    # file in the path, even with depth set. Further, every file
+    # from os.walk() is checked for length to see if it should be
+    # sent to processDupes(), even with depth set.
+    try:
+        for root, dirNames, fileNames in os.walk(path):
+            if depth:
+                if root[len(path):].count(os.sep) < depth:
+                    processDupes(root, fileNames, algorithm)
+            else:
+                processDupes(root, fileNames, algorithm)
+
+    except Exception as e:
+        print("raising exception in printDupes()")
+        print(e)
 
 def hashFile(filePath, algorithm):
     '''hashFile(): Str1 Str2 --> StrA
@@ -33,14 +82,13 @@ def hashFile(filePath, algorithm):
 
     return(hasher.hexdigest())
 
-def main(pathRoot, algorithm):
-    '''main(): Str1 Str2 -> StdOut
+def main(pathRoot, algorithm, depth):
+    '''main(): Str1 Str2 [Int|Bool] -> StdOut
     Purpose: to find all duplicate files in directory Str1 using hash
              algorithm Str2, printing their hashes and file paths to
-             StdOut.
+             StdOut. If Int, only search Int many levels down within
+             the directory at Str1.
     '''
-
-    # Need support for -max-depth optional arg.
 
     # Walk the path at pathRoot, hash each file, check whether hash has
     # been seen, and if not, add to the "seen" dict. If it's already
@@ -51,31 +99,9 @@ def main(pathRoot, algorithm):
     realPath = os.path.realpath(pathRoot)
 
     if os.path.isdir(realPath):
-        try:
-            for dirPath, dirNames, fileNames in os.walk(realPath):
-                for fileName in fileNames:
-                    filePath = dirPath.rstrip('/')+'/'+fileName
-                    hash = hashFile(filePath,algorithm)
-                    if hash in seen.keys():
-                        if seen[hash]['printed'] == 0:
-                            print(hash+"	"+seen[hash]['fullPath'])
-                            print(hash+"	"+filePath)
-                            seen[hash]['printed'] = 1
-                        elif seen[hash]['printed'] == 1:
-                            print(hash+"	"+filePath)
-                        else:
-                            raise Exception("Something went wrong \
-                                            in the seen dict.")
-                    else:
-                        seen[hash] = {'fullPath' : filePath,
-                                      'printed' : 0 }
-                                  
-        except Exception as e:
-            print("main(): exception at line 71")
-            print(e)
+        printDupes(realPath, algorithm, depth)
     else:
         sys.exit("Error: \"%s\" is not a valid directory." % pathRoot)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -86,14 +112,27 @@ if __name__ == '__main__':
                         help = "hash algorithm to use. Default is SHA256.",
                         default = 'sha256')
     parser.add_argument("--max-depth",
-                        help = "(in development) number of directories down \
-                               in the tree to compare files.",
+                        help = "number of directories down \
+                                in the tree to compare files.",
                         type = int)
     args = parser.parse_args()
+    #print('the args are: %s' % args)
     try:                # How to handle BrokenPipeError from | head?
-        main(args.pathRoot,args.algorithm)
+        main(args.pathRoot,args.algorithm,args.max_depth)
     except KeyboardInterrupt: 
         try:
             sys.exit(0)
         except SystemExit:
             os._exit(0) # Why does Internet say to do this?
+
+# Discovered interesting race condition while developing
+# the --max-depth arg. When running the program, temporary
+# files can be enumerated, then disappear before they are
+# hashed? Example:
+
+# /toolbox$ ./find-duplicates ./ --max-depth 1
+# main(): exception at line 71
+# [Errno 2] No such file or directory: '/home/user/Code/bltpt/toolbox/.#find-duplicates'
+
+# Guessing I wrote a change to the find-duplicates program while it was
+# executing. How do I capture this once the program is successfully running?
