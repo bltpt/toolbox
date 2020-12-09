@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# epoch2utc: Str -> StdOut
+# Purpose: take Epoch time in as Str and print a human-readable
+#          time to StdOut in UTC.
+
+EPOCH="$1"
+
+date -j -u -f "%s" "$EPOCH" "+%Y-%m-%dT%T %Z"
