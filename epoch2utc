@@ -1,9 +1,29 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # epoch2utc: Str -> StdOut
 # Purpose: take Epoch time in as Str and print a human-readable
 #          time to StdOut in UTC.
 
 EPOCH="$1"
+FORMAT="+%Y-%m-%dT%T %Z"
 
-date -j -u -f "%s" "$EPOCH" "+%Y-%m-%dT%T %Z"
+# Turn this into something that can accept -u as an arg,
+# so that we can 
+# for i in "$0"
+# do
+#     case $i in
+# 	-u|--utc)
+# 	UTC=" -u "
+# 	shift
+# 	;;
+# 	*)
+#     esac
+# done
+
+if [ `uname` == "Darwin" ]
+then
+    date -j -u -f "%s" "$EPOCH" "$FORMAT"
+elif [ `uname` == "Linux" ]
+then
+    date $UTC --date=@"$EPOCH" "$FORMAT"
+fi
