@@ -5,9 +5,7 @@
 # Test for presence of an input argument
 if [ -z "$1" ]
 then
-    echo "Bad argument. Correct use:"
-    echo ""
-    echo "                            mkproj Some-Project-Name"
+    echo "Bad argument. Correct use:  mkproj <Some-Project-Name>"
 else
     
     # Interpret the argument as the name of a directory to be created.
