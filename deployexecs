@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-'''
-deployexecs: [-d] [Str1] Str2 -> FilesOnDisc
+'''deployexecs: [-d] [Str1] Str2 -> FilesOnDisc
 Purpose: to copy executables from the current working directory to the
          directory at Str2. Optionally, copy executables from the
          directory at Str1 instead, and if the 'd' flag is specified,
@@ -12,56 +11,141 @@ Purpose: to copy executables from the current working directory to the
 import os
 import sys
 import argparse
+import hashlib
 
-cwd = os.getcwd() # current working directory
-
-executables = []
-
-try:
-    dest = sys.argv[1]
-except IndexError as e:
-    print('Use: deployexecs path/to/destination/directory')
-    sys.exit(0)
-
-for item in os.walk(cwd):
-    if item[0] == cwd:
-        for file in item[2]:
-            # various temp file tests...
-            if '~' not in file:
-                if '#' not in file:
-                    if file[0] not in '.':
-                        if os.access(file, os.X_OK): # is executable?
-                            executables.append(file)
-
-for file in executables:
-    print("copying %s" % file)
-    os.popen('cp %s %s' % (file, dest))
-
-## New stuff
-
-def hashFile(f):
-    '''hashFile(): io.BufferedReader -> Str
-    Purpose: read the io.BufferedReader and print its SHA256 hash.
+def copyFile(f,toDir):
+    '''copyFile() Str1 Str2 -> FileOnDisc StdOut
+    Purpose: to copy file at Str1 to directory at Str2 and print at
+             note to StdOut.
     '''
-    hashValue = hashlib.sha256(f)
-    return hashValue.hexdigest()
+    
+    print("copying %s" % f)
+    os.popen('cp %s %s' % (f, toDir)) # make this pythonic    
 
+def hashFile(filePath, algorithm):
+    '''hashFile(): Str1 Str2 --> StrA
+    Purpose: to hash the file at Str1 with the algorithm of Str2 and
+             return its hash as StrA.
+    '''
+    if algorithm in hashlib.algorithms_guaranteed:
+        hasher = getattr(hashlib, algorithm)()
+    else:
+        raise ValueError("Error: unsupported hash algorithm \"%s\"." %
+                         algorithm)
 
+    blocksize = 65536
+
+    with open(filePath, 'rb') as f:
+        buf = f.read(blocksize)
+        while len(buf) > 0:
+            hasher.update(buf)
+            buf = f.read(blocksize)
+
+    return(hasher.hexdigest())
+
+def copyExecs(fromDir, toDir, differ):
+    '''copyExecs(): Str1 Str2 Bool -> FilesOnDisc StdOut
+    Purpose: copy all executables from dir at Str1 to the dir at Str2.
+             If Bool is True, only copy those files in fromDir that
+             differ from those in toDir.
+    '''
+    executables = []
+
+    for root, dirNames, fileNames in os.walk(fromDir):
+        if root == fromDir:
+            print("root matches fromDir: %s" % fromDir)
+            for filename in fileNames:
+                # various temp file tests...
+                if '~' not in filename:
+                    if '#' not in filename:
+                        if filename[0] not in '.':
+                            if os.access(filename, os.X_OK): # is executable?
+                                executables.append(filename)
+                                print("found file %s in dir %s" % (filename,
+                                                                   fromDir))
+
+    if differ:
+        print("attempting differential analysis")
+        for executable in executables:
+            execBase = os.path.basename(executable)
+            execHash = hashFile(executable, 'sha256')
+
+            # search toDir to see if there's a file as the same name
+            # as the executable
+            for root, dirNames, fileNames in os.walk(toDir):
+                if root == toDir:
+                    print("found toDir: %s" % toDir)
+                    for filename in fileNames:
+                        print("comparing %s to %s:" % (executable,
+                                                       filename))
+                        fileHash = hashFile(root+'/'+filename,
+                                            'sha256')
+                        fileBase = os.path.basename(root+'/'+filename)
+                        if fileBase == execBase:
+                            if execHash != fileHash:
+                                print("trying to copy file %s" %
+                                      executable)
+                                copyFile(executable, toDir)
+                            else:
+                                continue
+                # how to keep from continuing to iterate through
+                # root, dirNames and fileNames?
+                        
+    else:
+        copyFile(executable,toDir)
+                
+def main(namespace):
+    '''main(): NameSpace -> FilesOnDisc StdOut
+    Purpose: process the arguments from NameSpace and figure out
+             whether all of the executables in the current working
+             directory should be copied to the 'todir', or whether an
+             explicit 'fromdir' should be used. Also, use the presence
+             or absence of the 'differ' boolean to inform which
+             executables to copy.
+    '''
+
+    try:
+        differ = namespace.differ
+        fromDir = namespace.fromDir
+        toDir = namespace.toDir
+    except Exception as e:
+        print(e)
+
+    realFromDir = os.path.realpath(fromDir)
+    realToDir = os.path.realpath(toDir)
+
+    copyExecs(realFromDir,realToDir,differ)
+        
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--differ',
+                        help='only copy files that differ from the \
+                              files of the same name at the target \
+                              directory',
+                        action='store_true')
+    parser.add_argument('fromDir',
+                        help='path to an executable to copy to the \
+                              target directory')
+    parser.add_argument('toDir',
+                        help='path of a directory to which \
+                             the executable(s) will be copied')
+    try:
+        args, unknown = parser.parse_known_args()
+    except Exception as e:
+        print("Error occurred during arg parsing")
+        print(type(e))
+        print(e)
 
-# For each file in target, get hash
-
-# For each file being copied, get hash
-
-# If the thing being copied doesn't exist in the target directory, copy
-# it.
-
-# If the thing being copied has the same hash as the file at the
-# target, do nothing.
-
-# If the thing being copies has a different hash than the file at the
-# target, copy it and say as much.
-
-# What to do if the executable already in the target directory isn't
-# readable to the user running the problem?
+    try:
+        if unknown:
+            print('Unknown arguments were passed. '
+                  'Did you maybe enter a list of files '
+                  'or something\nthat your shell would expand? '
+                  'The unknown arguments were: %s' % unknown)
+            sys.exit(1)
+        else:
+            main(args)
+    except Exception as e:
+        print('something went wrong')
+        print(type(e))
+        print(e)
