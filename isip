@@ -1,0 +1,13 @@
+#!/bin/bash
+
+read stdIn
+
+ipv4=`echo $stdIn | perl -ne "/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/ && print"`
+
+# Add IPv6 and change "Not an IPv4 to 'No'"
+if [ "$ipv4" == "" ]
+then
+    echo "Not an IPv4"
+else
+    echo "IPv4"
+fi
