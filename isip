@@ -1,20 +1,28 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-read stdIn
+import netaddr
+import sys
+import os
 
-ipv4=`echo $stdIn | perl -ne "/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/ && print"`
-
-ipv6=`echo $stdIn | perl -ne "/^(?:(?:(?:[A-F0-9]{1,4}:){6}|(?=(?:[A-F0-9]{0,4}:){0,6}(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)(([0-9A-F]{1,4}:){0,5}|:)((:[0-9A-F]{1,4}){1,5}:|:)|::(?:[A-F0-9]{1,4}:){5})(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])|(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}|(?=(?:[A-F0-9]{0,4}:){0,7}[A-F0-9]{0,4}$)(([0-9A-F]{1,4}:){1,7}|:)((:[0-9A-F]{1,4}){1,7}|:)|(?:[A-F0-9]{1,4}:){7}:|:(:[A-F0-9]{1,4}){7})$/ && print"`
-
-# Add IPv6 and change "Not an IPv4 to 'No'"
-if [ "$ipv4" == "" ]
-then
-    if [ "$ipv6" == "" ]
-    then
-	echo "No"
-    else
-    	echo "IPv6"
-    fi
-else
-    echo "IPv4"
-fi
+def isIP(addr):
+    '''isIP: Str1 -> StrA
+    Purpose: see if the Str represents an IP address, and return either
+             the version of IP it represents, or "No".
+    '''
+    
+    try:
+        addr = netaddr.IPAddress(addr.rstrip())
+        return("IPv%s" % addr.version)
+    except netaddr.core.AddrFormatError as e:
+        return("No")
+    
+if __name__ == '__main__':
+    if not os.isatty(0):
+        input = sys.stdin.readlines()
+        for line in input:
+            print(isIP(line))
+    else:
+        try:
+            print(isIP(sys.argv[1]))
+        except IndexError as e:
+            print('Correct use: nslookupip /path/to/ListOfIPs')
