@@ -90,12 +90,6 @@ def main(pathRoot, algorithm, depth):
              the directory at Str1.
     '''
 
-    # Walk the path at pathRoot, hash each file, check whether hash has
-    # been seen, and if not, add to the "seen" dict. If it's already
-    # been seen, print the already "seen" one and the one in the
-    # current loop.
-    seen = dict()
-
     realPath = os.path.realpath(pathRoot)
 
     if os.path.isdir(realPath):
