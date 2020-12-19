@@ -12,15 +12,22 @@ import os
 import sys
 import argparse
 import hashlib
+import shutil
 
-def copyFile(f,toDir):
+def copyFile(fromFile,toDir):
     '''copyFile() Str1 Str2 -> FileOnDisc StdOut
     Purpose: to copy file at Str1 to directory at Str2 and print at
              note to StdOut.
     '''
-    
-    print("copying %s" % f)
-    os.popen('cp %s %s' % (f, toDir)) # make this pythonic    
+
+    basename = os.path.basename(fromFile)
+
+    destFile = toDir+'/'+basename
+
+    try:
+        shutil.copy(fromFile, destFile)
+    except Exception as e:
+        print(e)
 
 def hashFile(filePath, algorithm):
     '''hashFile(): Str1 Str2 --> StrA
@@ -53,7 +60,6 @@ def copyExecs(fromDir, toDir, differ):
 
     for root, dirNames, fileNames in os.walk(fromDir):
         if root == fromDir:
-            print("root matches fromDir: %s" % fromDir)
             for filename in fileNames:
                 # various temp file tests...
                 if '~' not in filename:
@@ -61,11 +67,13 @@ def copyExecs(fromDir, toDir, differ):
                         if filename[0] not in '.':
                             if os.access(filename, os.X_OK): # is executable?
                                 executables.append(filename)
-                                print("found file %s in dir %s" % (filename,
-                                                                   fromDir))
 
+    if not executables:
+        print("No executables to copy.")
+        sys.exit(1)
+        
     if differ:
-        print("attempting differential analysis")
+        diffs = 0
         for executable in executables:
             execBase = os.path.basename(executable)
             execHash = hashFile(executable, 'sha256')
@@ -74,24 +82,27 @@ def copyExecs(fromDir, toDir, differ):
             # as the executable
             for root, dirNames, fileNames in os.walk(toDir):
                 if root == toDir:
-                    print("found toDir: %s" % toDir)
                     for filename in fileNames:
-                        print("comparing %s to %s:" % (executable,
-                                                       filename))
                         fileHash = hashFile(root+'/'+filename,
                                             'sha256')
                         fileBase = os.path.basename(root+'/'+filename)
                         if fileBase == execBase:
                             if execHash != fileHash:
-                                print("trying to copy file %s" %
-                                      executable)
+                                print("copying file %s to %s" %
+                                      (executable, toDir))
                                 copyFile(executable, toDir)
+                                diffs = diffs + 1
                             else:
                                 continue
                 # how to keep from continuing to iterate through
                 # root, dirNames and fileNames?
-                        
+        if diffs == 0:
+            print("No executables in %s differ from those in %s. "
+                   "Exiting..." %
+                  (fromDir, toDir))
+
     else:
+        print("copying %s" % f)
         copyFile(executable,toDir)
                 
 def main(namespace):
