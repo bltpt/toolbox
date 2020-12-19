@@ -102,8 +102,9 @@ def copyExecs(fromDir, toDir, differ):
                   (fromDir, toDir))
 
     else:
-        print("copying %s" % f)
-        copyFile(executable,toDir)
+        for executable in executables:
+            print("copying %s" % executable)
+            copyFile(executable,toDir)
                 
 def main(namespace):
     '''main(): NameSpace -> FilesOnDisc StdOut
