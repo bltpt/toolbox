@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# printl: TSVFile -> StdOut
+# Purpose: to print a TSV to StdOut in neat columns
+
+FILE=$1
+
+delim=$(printf '\x00')
+
+cat "$FILE" | tr "\t" "${delim}" | column -s "${delim}" -t 2>/dev/null
