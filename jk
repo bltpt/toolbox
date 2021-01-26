@@ -3,15 +3,68 @@
 import json
 import sys
 import argparse
+import os
 
-def findKeysAndSiblings(data,key):
+def json_extract(obj, key):
+    """Recursively fetch values from nested JSON."""
+    arr = []
+
+    def extract(obj, arr, key):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    values = extract(obj, arr, key)
+    return values
+
+def findKeysAndSiblings(obj,key):
+    '''findKeysAndSiblings(): Dict Str --> StdOut
+    Purpose: where Dict is a representation of a JSON object, search it
+             for all instances of key Str, and print to StdOut the JSON
+             object in which each key is contained to Std.
+    '''
     print("findKeysAndSiblings")
+    arr = []
+
+    def extract(obj, arr, key):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(obj)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    values = extract(obj, arr, key)
+    #return values
+    for value in values:
+        print(value,"\n")
 
 def findKeyAndSibling(data,key):
     print("findKeyAndSibling")
-    
+
 def findAllKeys(data,key):
-    print("findAllKeys")
+    '''findAllKeys(): Dict Str -> StdOut
+    Purpose: where Dict is a representation of a JSON object, search it
+             for all instances of key Str, and print the key and its
+             values to StdOut.
+    '''
+    values = json_extract(data,key)
+
+    for value in values:
+        print(key, value)
 
 def findFirstKey(data,key):
     '''findFirstKey(): Dict|List Str -> StdOut
@@ -20,20 +73,8 @@ def findFirstKey(data,key):
              the first argument is a List, pass it back to the function
              to search for more Dicts.
     '''
-    print("findFirstKey")
+    print('findFirstKey')
 
-    if type(data) == 'dict':
-        for element in data.keys():
-            if element == key:
-                print(element, data[element])
-
-    elif type(data) == 'list':
-        findFirstKey(data)
-
-    else:
-        print("Error: findFirstKey was handed something that's neither",
-              "a Dict or a List. See:", type(data))
-    
 def main(namespace):
     '''main(): Namespace -> StdOut
     Purpose: read a JSON object with argument from Dict and process it
@@ -45,7 +86,7 @@ def main(namespace):
     key = False
     findAll = False
     findSiblings = False
-    
+
     try:
         jfile = namespace.file
         key = namespace.key
@@ -53,7 +94,7 @@ def main(namespace):
         findSiblings = namespace.find_siblings
     except AttributeError as e:
         pass
-    
+
     if jfile:
 
         with open(jfile,'r') as f:
