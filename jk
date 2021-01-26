@@ -1,0 +1,102 @@
+#!/usr/bin/python3
+
+import json
+import sys
+import argparse
+
+def findKeysAndSiblings(data,key):
+    print("findKeysAndSiblings")
+
+def findKeyAndSibling(data,key):
+    print("findKeyAndSibling")
+    
+def findAllKeys(data,key):
+    print("findAllKeys")
+
+def findFirstKey(data,key):
+    '''findFirstKey(): Dict|List Str -> StdOut
+    Purpose: to find the first instance of Str as a key at any level
+             in Dict, then print that key and its value to StdOut. If
+             the first argument is a List, pass it back to the function
+             to search for more Dicts.
+    '''
+    print("findFirstKey")
+
+    if type(data) == 'dict':
+        for element in data.keys():
+            if element == key:
+                print(element, data[element])
+
+    elif type(data) == 'list':
+        findFirstKey(data)
+
+    else:
+        print("Error: findFirstKey was handed something that's neither",
+              "a Dict or a List. See:", type(data))
+    
+def main(namespace):
+    '''main(): Namespace -> StdOut
+    Purpose: read a JSON object with argument from Dict and process it
+             according to the kwards in Dict, then print some things to
+             StdOut.
+    '''
+
+    jfile = False
+    key = False
+    findAll = False
+    findSiblings = False
+    
+    try:
+        jfile = namespace.file
+        key = namespace.key
+        findAll = namespace.find_all
+        findSiblings = namespace.find_siblings
+    except AttributeError as e:
+        pass
+    
+    if jfile:
+
+        with open(jfile,'r') as f:
+            data = json.load(f)
+            
+        if key and findAll and findSiblings:
+            findKeysAndSiblings(data,key)
+
+        elif key and findAll:
+            findAllKeys(data,key)
+
+        elif key and findSiblings:
+            findKeyAndSibling(data,key)
+
+        elif key:
+            findFirstKey(data,key)
+
+        else:
+            sys.exit("Error: you need to pass the --key argument")
+
+    else:
+        sys.exit("Error: you need to pass a file argument.")
+        
+        
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-k", "--key",
+                        help = "return the first instances of specified key",
+                        type = str )
+
+    parser.add_argument("--find-all",
+                        help = "return all instances of a key and its value",
+                        action = 'store_true')
+
+    parser.add_argument("--find-siblings",
+                        help = "return the keys and values of all objects at the same level as the hierarchy as the key being searched for",
+                        action = 'store_true',
+                        default = False)
+
+    parser.add_argument("file",
+                        help = "path to a json file")
+
+    args = parser.parse_args()
+
+    main(args)
