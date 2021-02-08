@@ -1,0 +1,185 @@
+#!/usr/bin/python3
+
+import json
+import sys
+import argparse
+import os
+
+def json_extract(obj, key):
+    """Recursively fetch values from nested JSON."""
+    arr = []
+
+    def extract(obj, arr, key):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(v)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    values = extract(obj, arr, key)
+    return values
+
+def findKeysAndSiblings(obj,key):
+    '''findKeysAndSiblings(): Dict Str --> StdOut
+    Purpose: where Dict is a representation of a JSON object, search it
+             for all instances of key Str, and print to StdOut the JSON
+             object in which each key is contained to Std.
+    '''
+    arr = []
+
+    def extract(obj, arr, key):
+        """Recursively search for values of key in JSON tree."""
+        if isinstance(obj, dict):
+            for k, v in obj.items():
+                if isinstance(v, (dict, list)):
+                    extract(v, arr, key)
+                elif k == key:
+                    arr.append(obj)
+        elif isinstance(obj, list):
+            for item in obj:
+                extract(item, arr, key)
+        return arr
+
+    values = extract(obj, arr, key)
+    #return values
+    for value in values:
+        print(value,"\n")
+
+def findKeyAndSibling(data,key):
+    print("findKeyAndSibling")
+
+def findAllKeys(data,key):
+    '''findAllKeys(): Dict Str -> StdOut
+    Purpose: where Dict is a representation of a JSON object, search it
+             for all instances of key Str, and print the key and its
+             values to StdOut.
+    '''
+    values = json_extract(data,key)
+
+    for value in values:
+        print(key, value)
+
+def findFirstKey(data,key):
+    '''findFirstKey(): Dict|List Str -> StdOut
+    Purpose: to find the first instance of Str as a key at any level
+             in Dict, then print that key and its value to StdOut. If
+             the first argument is a List, pass it back to the function
+             to search for more Dicts.
+    '''
+    print('findFirstKey')
+
+def main(namespace,jsonObj=False):
+    '''main(): Namespace [Str] -> StdOut
+    Purpose: parse the Namespace to determine how to read a JSON object
+             from a file, or if optional Str is given, how to read that
+             Str as a JSON object.
+    '''
+    # This is inelegant at best. Clean this up into
+    # "processArgs" and "processJson" functions.
+
+    jfile = False
+    key = False
+    findAll = False
+    findSiblings = False
+
+    for k,v in vars(namespace).items():
+        if k == 'file':
+            jfile = namespace.file
+        elif k == 'key':
+            key = namespace.key
+        elif k == 'find_all':
+            findAll = namespace.find_all
+        elif k == 'find_siblings':
+            findSiblings = namespace.find_siblings
+
+    if jsonObj:
+        #print("reading from stdin")
+        #print(jsonObj)
+        jsonObj = jsonObj.replace("\'","\"")
+        #jsonObj = "["+jsonObj+"]"
+        data = json.loads(jsonObj)
+        
+        if key and findAll and findSiblings:
+            findKeysAndSiblings(data,key)
+
+        elif key and findAll:
+            findAllKeys(data,key)
+
+        elif key and findSiblings:
+            findKeyAndSibling(data,key)
+
+        elif key:
+            findFirstKey(data,key)
+
+        else:
+            sys.exit("Error: you need to pass the --key argument")
+
+    elif jfile:
+        with open(jfile,'r') as f:
+            data = json.load(f)
+        
+        if key and findAll and findSiblings:
+            findKeysAndSiblings(data,key)
+
+        elif key and findAll:
+            findAllKeys(data,key)
+
+        elif key and findSiblings:
+            findKeyAndSibling(data,key)
+
+        elif key:
+            findFirstKey(data,key)
+
+        else:
+            sys.exit("Error: you need to pass the --key argument")
+
+    else:
+        sys.exit("Error: you need to pass a file argument or direct",
+                 "JSON objects in from StdIn.")
+
+
+if __name__ == "__main__":
+    # If reading from StdIn, treat each line as a JSON object. Else,
+    # read from a file.
+    if not os.isatty(0):
+        input = sys.stdin.readlines()
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-k", "--key",
+                        help = "return the first instances of specified key",
+                        type = str )
+        parser.add_argument("--find-all",
+                        help = "return all instances of a key and its value",
+                        action = 'store_true')
+        parser.add_argument("--find-siblings",
+                        help = "return the keys and values of all objects at the same level as the hierarchy as the key being searched for",
+                        action = 'store_true',
+                        default = False)
+        args = parser.parse_args()
+        
+        for line in input:
+            main(args,line)
+    else:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-k", "--key",
+                        help = "return the first instances of specified key",
+                        type = str )
+        parser.add_argument("--find-all",
+                        help = "return all instances of a key and its value",
+                        action = 'store_true')
+        parser.add_argument("--find-siblings",
+                        help = "return the keys and values of all objects at the same level as the hierarchy as the key being searched for",
+                        action = 'store_true',
+                        default = False)
+        parser.add_argument("file",
+                        help = "path to a json file")
+
+        args = parser.parse_args()
+
+        main(args)
