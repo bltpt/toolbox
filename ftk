@@ -1,0 +1,43 @@
+#!/usr/bin/env python3.7
+
+import sys
+import json
+
+def ptdv(obj):
+    print("ptdv entered: %s" % type(obj))
+    print("the obj is: %s" % obj)
+    if isinstance(obj, dict):
+        for k,v in obj.items():
+            if isinstance(v,list):
+                isFlat = True
+                for item in v:
+                    if not isinstance(v, str):
+                        isFlat = False
+                if isFlat:
+                    print("%s : %v" % (k,v))
+                else:
+                    ptdv(v)
+    elif isinstance(obj, list):
+        print("found an obj of length %s" % len(obj))
+        if len(obj) > 0:
+            #print("It's first item is: ", obj[0])
+            #print("It's second item is: ", obj[1])
+            isFlat = True
+            for item in obj:
+                if not isinstance(item, str):
+                    isFlat = False
+
+            if isFlat:
+                print(obj)
+            else:
+                for item in obj:
+                    ptdv(obj)
+    else:
+        print("error: got a %s : %s" % (type(obj), obj))
+
+with open(sys.argv[1], 'r') as f:
+    data = json.load(f)
+
+for k,v in data.items():
+    print("processing",k)
+    ptdv(v)
