@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # projstates: Str -> Str
 # Purpose: convert a ProjHeader string to a list of states
