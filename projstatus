@@ -98,7 +98,7 @@ do
 	then
 	    # Grab the last modification time of the org file.
 	    # This is the macOS-specific invocation.
-	    rawLastMod=`stat -x $file | grep Modify | sed 's/^Modify: //' | cut -f 2-5 -d " "`
+	    rawLastMod=`stat -x $file | grep Modify | cut -f 3- -d " "`
 	    lastMod=`date -jf "%b %e %H:%M:%S %Y" "$rawLastMod"  +"%Y-%m-%d %H:%M"`
 	else
 	    lastMod='Unsupported platform'
