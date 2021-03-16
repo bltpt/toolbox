@@ -7,6 +7,12 @@
 EPOCH="$1"
 FORMAT="+%Y-%m-%dT%T %Z"
 
+if [ -z "$1" ]
+then
+    printf "Usage: epoch2local <epoch timestamp>\n"
+    exit 0
+fi
+
 if [ `uname` == "Darwin" ]
 then
     date -j -f "%s" "$EPOCH" "$FORMAT"
