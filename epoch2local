@@ -13,10 +13,10 @@ then
     exit 0
 fi
 
-if [ `uname` == "Darwin" ]
+if [[ `uname` == "Darwin" || `uname` == "FreeBSD" ]]
 then
     date -j -f "%s" "$EPOCH" "$FORMAT"
 elif [ `uname` == "Linux" ]
 then
-    date $UTC --date=@"$EPOCH" "$FORMAT"
+    date --date=@"$EPOCH" "$FORMAT"
 fi
