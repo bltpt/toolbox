@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+# epoch2local: Str -> StdOut
+# Purpose: take Epoch time in as Str and print a human-readable
+#          time to StdOut in system local time.
+
+EPOCH="$1"
+FORMAT="+%Y-%m-%dT%T %Z"
+
+if [ -z "$1" ]
+then
+    printf "Usage: epoch2local <epoch timestamp>\n"
+    exit 0
+fi
+
+if [[ `uname` == "Darwin" || `uname` == "FreeBSD" ]]
+then
+    date -j -f "%s" "$EPOCH" "$FORMAT"
+elif [ `uname` == "Linux" ]
+then
+    date --date=@"$EPOCH" "$FORMAT"
+fi

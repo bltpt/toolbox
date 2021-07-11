@@ -15,7 +15,7 @@ then
     SHASUM="sha256sum"
 else
     echo "Error -- unsupported platform. Can't tell what SHA256 utility to use."
-    exit
+    exit 1
 fi
 
 #here=`echo $arg1 | sed s/
