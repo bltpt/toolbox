@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
-if [[ -z $1 ]]
+if [ -z "$1" ]
 then
     cal
     exit
 fi
     
-if [[ -z $2 ]]
+if [ -z "$2" ]
 then
     month=$1
     year=`date "+%Y"`
